@@ -1,0 +1,424 @@
+<!doctype html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="description" content="江苏PPM工作流管理平台">
+	<meta name="viewport"
+		  content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, width=device-width">
+    <title>江苏PPM工作流管理平台</title>
+	<link rel="stylesheet" href="assets/css/elestyle/theme/index.css">
+    <script src="assets/js/plugins/axios/axios.min.js"></script>
+    <script src="assets/js/plugins/vue/vue.js" ></script>
+	<script src="assets/js/plugins/eleme/element.js"></script>
+	<style>
+
+	</style>
+</head>
+<body>
+
+<div id="main">
+	<div>
+		<el-tabs v-model="activeName" @tab-click="handleClick">
+			<el-tab-pane label="流程设计工作区" name="first">
+				<div>
+					<div>
+						<el-button-group>
+							<el-button type="primary" icon="el-icon-plus-" @click="dialogFormVisible= true">新建</el-button>
+							<el-button type="primary" icon="el-icon-delete-" @click="dialogVisible= true">删除</el-button>
+						</el-button-group>
+					</div>
+					<div>
+						<el-table
+								:data="models"
+								border
+								style="width: 100%"
+								@selection-change="handleSelectionChange">
+							<el-table-column
+									type="selection"
+									width="55">
+							</el-table-column>
+							<el-table-column
+									prop="id"
+									label="id"
+									width="180">
+							</el-table-column>
+							<el-table-column
+									prop="name"
+									label="名称"
+									width="180">
+							</el-table-column>
+							<el-table-column
+									prop="key"
+									label="key">
+							</el-table-column>
+							<el-table-column
+									prop="description"
+									label="描述">
+							</el-table-column>
+							<el-table-column
+									prop="createTime"
+									label="创建时间">
+							</el-table-column>
+							<el-table-column
+									prop="lastUpdateTime"
+									label="更新时间">
+							</el-table-column>
+
+							<el-table-column inline-template label="操作" ali>
+								<div>
+									<el-button
+											size="mini"
+											@click="handleEdit(row)">编辑
+									</el-button>
+									<el-button
+											size="mini"
+											type="danger"
+											@click="handleDeploy(row)">部署
+									</el-button>
+								</div>
+							</el-table-column>
+						</el-table>
+						<el-pagination style='float:right'
+									   layout="total, prev, pager, next"
+									   :current-page="form.index"
+									   :page-size="form.size"
+									   :total="form.total"
+									   @current-change="_handlePageModel">
+						</el-pagination>
+					</div>
+				</div>
+			</el-tab-pane>
+			<el-tab-pane label="已部署流程定义" name="second">
+
+				<div>
+					<el-table
+							:data="flows"
+							border
+							style="width: 100%"
+							>
+
+						<el-table-column
+								prop="id"
+								label="id"
+								width="180">
+						</el-table-column>
+						<el-table-column
+								prop="name"
+								label="名称"
+								width="180">
+						</el-table-column>
+						<el-table-column
+								prop="key"
+								label="key">
+						</el-table-column>
+						<el-table-column
+								prop="version"
+								label="版本">
+						</el-table-column>
+
+
+						<el-table-column inline-template label="操作" ali>
+							<div>
+								<el-button
+										size="mini"
+										@click="handleViewFlow(row)">查看
+								</el-button>
+							</div>
+						</el-table-column>
+					</el-table>
+					<el-pagination style='float:right'
+								   layout="total, prev, pager, next"
+								   :current-page="form2.index"
+								   :page-size="form2.size"
+								   :total="form2.total"
+								   @current-change="_handlePageFlow">
+					</el-pagination>
+				</div>
+
+			</el-tab-pane>
+		</el-tabs>
+
+	</div>
+
+
+	<el-dialog title="新建设计模型" :visible.sync="dialogFormVisible">
+		<el-form :model="dialog" :rules="rules" ref="ruleForm">
+			<el-form-item label="名称" prop="name">
+				<el-input v-model="dialog.name" auto-complete="off"></el-input>
+			</el-form-item>
+			<el-form-item label="key" prop="key">
+				<el-input v-model="dialog.key" auto-complete="off"></el-input>
+			</el-form-item>
+			<el-form-item label="描述" prop="description">
+				<el-input v-model="dialog.description" auto-complete="off"></el-input>
+			</el-form-item>
+		</el-form>
+		<div slot="footer" class="dialog-footer">
+			<el-button @click="dialogFormVisible = false">取 消</el-button>
+			<el-button type="primary" @click="createModel">确 定</el-button>
+		</div>
+	</el-dialog>
+
+	<el-dialog
+			title="提示"
+			:visible.sync="dialogVisible"
+			size="tiny"
+			>
+		<span>您确定要删除选中的{{selectedModels.length}}个模型吗？这个操作不可恢复</span>
+		<span slot="footer" class="dialog-footer">
+			<el-button @click="dialogVisible = false">取 消</el-button>
+			<el-button type="primary" @click="handleClose">确 定</el-button>
+  		</span>
+	</el-dialog>
+</div>
+
+
+<style>
+
+
+</style>
+
+
+<script>
+    new Vue({
+    	el:"#main",
+        beforeMount: function () {
+
+            //主数据
+            this.init();
+        },
+    	data: {
+    	    //模板列表分页参数
+            form: {
+                page: 1,
+                size: 10,
+				total: 0
+            },
+			//流程定义列表分页参数
+			form2: {
+                page: 1,
+                size: 10,
+				total: 0
+            },
+            activeName: "first",
+			//模型列表
+            models: [],
+			//流程定义列表
+            flows: [],
+			//新建模板对话框
+            dialogFormVisible: false,
+			//是否删除模板对话框
+            dialogVisible: false,
+            //对话框表单属性
+			dialog: {
+                name: "",
+                key: "",
+                description: ""
+            },
+			//对话框校验规则
+            rules: {
+                name: [
+                    {required: true, message: '请输入模型名称', trigger: 'blur'},
+                    {min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur'}
+                ]
+            },
+			//选中的模板列表
+			selectedModels: []
+        },
+    	methods:{
+
+            handleClick: function(tab, event) {
+                console.log(tab, event);
+            },
+
+            openModel: function (key, keyPath) {
+                console.log(key, keyPath);
+            },
+
+			//查询所有模型
+			queryModels: function () {
+
+                var vueThis= this;
+                axios.post('model/queryModels',{
+                    index: (this.form.page- 1)* this.form.size,
+					size: this.form.size
+                }).then(function (response) {
+
+					console.log(response);
+					if (response.status== 200)
+					{
+                        vueThis.models= response.data.data;
+                        vueThis.form.total= response.data.total;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+			//查询所有流程定义
+            queryFlows: function () {
+
+                var vueThis= this;
+                axios.post('model/queryFlows',{
+                    index: (this.form2.page- 1)* this.form2.size,
+					size: this.form2.size
+                }).then(function (response) {
+
+					console.log(response);
+					if (response.status== 200)
+					{
+					    vueThis.form2.total= response.data.total;
+                        vueThis.flows= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+            init: function () {
+
+			    this.queryModels();
+			    this.queryFlows();
+            },
+
+            onSubmit: function () {
+
+			    this.queryModels();
+            },
+
+            handleEdit: function (row) {
+
+                var modelId= row.id;
+                window.location.href= "modeler.html?modelId="+ modelId;
+            },
+			handleDeploy: function (row) {
+
+                var modelId= row.id;
+
+                var vueThis= this;
+                axios.post('model/deploy',{
+                    modelId: modelId
+                }).then(function (response) {
+
+                    console.log(response);
+                    if (response.status== 200)
+                    {
+                        vueThis.$message({
+                            message: '部署流程成功',
+                            type: 'success'
+                        });
+
+                        //自动刷新流程定义列表
+                        vueThis.init();
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]');
+                    console.log(error);
+                });
+            },
+			createModel: function () {
+
+                this.$refs["ruleForm"].validate((valid) => {
+                    if (valid) {
+
+                        var vueThis= this;
+                        axios.post('model/create',{
+                            name: this.dialog.name,
+                            key: this.dialog.key,
+                            description: this.dialog.description,
+                        }).then(function (response) {
+
+                            if (response.status== 200)
+                            {
+                                vueThis.init();
+                            }
+
+                        }).catch(function (error) {
+                            console.log('[ppm err]');
+                            console.log(error);
+                        });
+                    } else {
+                        console.log('error submit!!');
+                    }
+                });
+
+                this.dialogFormVisible= false;
+            },
+            handleSelectionChange: function (value) {
+
+                this.selectedModels= value;
+            },
+
+            handleClose() {
+
+                if (this.selectedModels.length> 0)
+                {
+                    var modelIdList= [];
+                    for(var i=0; i< this.selectedModels.length; i++)
+					{
+                        modelIdList.push(this.selectedModels[i].id);
+					}
+
+                    var vueThis= this;
+                    axios.post('model/delete',{
+                        modelIdList: modelIdList
+                    }).then(function (response) {
+
+                        if (response.status== 200)
+                        {
+                            vueThis.$message({
+                                message: '模型删除成功',
+                                type: 'success'
+                            });
+
+                            vueThis.init();
+                        }
+
+                    }).catch(function (error) {
+                        console.log('[ppm err]');
+                        console.log(error);
+                    });
+                }
+
+                this.dialogVisible= false;
+            },
+
+            _handlePageFlow: function (val) {
+                console.log(val);
+                this.form2.page= val;
+
+                this.queryFlows();
+            },
+			_handlePageModel: function (val) {
+                console.log(val);
+                this.form.page= val;
+
+                this.queryModels();
+            },
+
+			handleViewFlow: function (row) {
+
+                window.location.href= "diagram-viewer/index.html?processDefinitionId="+ row.id;
+            }
+    	},
+		computed: {
+
+		}
+    });
+</script>
+</body>
+</html>
+
