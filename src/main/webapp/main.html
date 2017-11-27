@@ -98,6 +98,15 @@
 			</el-tab-pane>
 			<el-tab-pane label="已部署流程定义" name="second">
 
+				<div style="width: 15%">
+					<el-input
+							placeholder="请输入流程key"
+							icon="search"
+							v-model="flowKey"
+							:on-icon-click="queryFlowByKey"
+							>
+					</el-input>
+				</div>
 				<div>
 					<el-table
 							:data="flows"
@@ -123,6 +132,10 @@
 								prop="version"
 								label="版本">
 						</el-table-column>
+						<el-table-column
+								prop="deploymentId"
+								label="部署id">
+						</el-table-column>
 
 
 						<el-table-column inline-template label="操作" ali>
@@ -130,6 +143,11 @@
 								<el-button
 										size="mini"
 										@click="handleViewFlow(row)">查看
+								</el-button>
+								<el-button
+										size="mini"
+										type="danger"
+										@click="handleDeleteFlow(row)">删除
 								</el-button>
 							</div>
 						</el-table-column>
@@ -178,6 +196,18 @@
 			<el-button type="primary" @click="handleClose">确 定</el-button>
   		</span>
 	</el-dialog>
+
+	<el-dialog
+			title="提示"
+			:visible.sync="dialogFlowVisible"
+			size="tiny"
+			>
+		<span>您确定要删除{{deleteFlowId}}流程定义吗？这个操作不可恢复</span>
+		<span slot="footer" class="dialog-footer">
+			<el-button @click="dialogFlowVisible = false">取 消</el-button>
+			<el-button type="primary" @click="handleCloseFlow">确 定</el-button>
+  		</span>
+	</el-dialog>
 </div>
 
 
@@ -213,10 +243,17 @@
             models: [],
 			//流程定义列表
             flows: [],
+			//根据流程key搜索流程列表
+            flowKey: '',
 			//新建模板对话框
             dialogFormVisible: false,
 			//是否删除模板对话框
             dialogVisible: false,
+			//是否删除流程对话框
+            dialogFlowVisible: false,
+			//需要删除的部署id
+            deleteFlowId: '-1',
+            deploymentId: '-1',
             //对话框表单属性
 			dialog: {
                 name: "",
@@ -269,7 +306,7 @@
             queryFlows: function () {
 
                 var vueThis= this;
-                axios.post('model/queryFlows',{
+                axios.post('flow/queryFlows',{
                     index: (this.form2.page- 1)* this.form2.size,
 					size: this.form2.size
                 }).then(function (response) {
@@ -285,6 +322,31 @@
                     console.log('[ppm err]')
                     console.log(error);
                 });
+            },
+
+            queryFlowByKey: function (val) {
+
+                this.form2.page= 1;
+
+                var vueThis= this;
+                axios.post('flow/queryFlows',{
+                    index: (this.form2.page- 1)* this.form2.size,
+                    size: this.form2.size,
+					flowKey: vueThis.flowKey
+                }).then(function (response) {
+
+                    console.log(response);
+                    if (response.status== 200)
+                    {
+                        vueThis.form2.total= response.data.total;
+                        vueThis.flows= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+
             },
 
             init: function () {
@@ -308,7 +370,7 @@
                 var modelId= row.id;
 
                 var vueThis= this;
-                axios.post('model/deploy',{
+                axios.post('flow/deploy',{
                     modelId: modelId
                 }).then(function (response) {
 
@@ -364,6 +426,8 @@
 
             handleClose() {
 
+                this.dialogVisible= false;
+
                 if (this.selectedModels.length> 0)
                 {
                     var modelIdList= [];
@@ -393,7 +457,6 @@
                     });
                 }
 
-                this.dialogVisible= false;
             },
 
             _handlePageFlow: function (val) {
@@ -412,6 +475,49 @@
 			handleViewFlow: function (row) {
 
                 window.location.href= "diagram-viewer/index.html?processDefinitionId="+ row.id;
+            },
+
+            filterFlow: function (value, row) {
+
+                return row.tag === value;
+            },
+
+			handleDeleteFlow: function (row) {
+
+                var flowId= row.id;
+                this.deleteFlowId= flowId;
+                this.deploymentId= row.deploymentId;
+
+                this.dialogFlowVisible= true;
+            },
+
+            handleCloseFlow: function () {
+
+                this.dialogFlowVisible= false;
+
+                if (this.deleteFlowId!= '-1')
+                {
+
+                    var vueThis= this;
+                    axios.post('flow/delete',{
+                        deploymentId: this.deploymentId
+                    }).then(function (response) {
+
+                        if (response.status== 200)
+                        {
+                            vueThis.$message({
+                                message: '流程定义删除成功',
+                                type: 'success'
+                            });
+
+                            vueThis.init();
+                        }
+
+                    }).catch(function (error) {
+                        console.log('[ppm err]');
+                        console.log(error);
+                    });
+                }
             }
     	},
 		computed: {

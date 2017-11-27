@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!--Converted at: Tue Apr 02 11:11:58 CST 2013-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ai.nppm.activitiWeb.dao.PPMFlowDAO">
+
+	<insert id="save" parameterType="java.util.Map">
+		insert into tache_detail
+		  (tache_id,
+		   flow_id,
+		   tache_name,
+		   activity_name,
+		   tache_desc,
+		   tache_spec_cd,
+		   tache_type_cd,
+		   weight,
+		   redispatch
+		   )
+		values
+			(
+			#{tacheId,jdbcType=DECIMAL},
+			#{flowId,jdbcType=DECIMAL},
+			#{tacheName,jdbcType=VARCHAR},
+			#{activityName,jdbcType=VARCHAR},
+			#{tacheDesc,jdbcType=VARCHAR},
+			#{tacheSpecCd,jdbcType=VARCHAR},
+			#{tacheTypeCd,jdbcType=VARCHAR},
+			#{weight,jdbcType=DECIMAL},
+			'N'
+			)
+
+	</insert>
+</mapper>

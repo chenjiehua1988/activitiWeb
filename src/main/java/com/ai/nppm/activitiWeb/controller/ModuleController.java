@@ -2,19 +2,19 @@ package com.ai.nppm.activitiWeb.controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import com.ai.nppm.activitiWeb.service.PPMFlowService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.Process;
 import org.activiti.editor.constants.ModelDataJsonConstants;
-import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.RepositoryService;
-import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 import org.slf4j.Logger;
@@ -26,7 +26,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +39,9 @@ public class ModuleController {
 	
 	private Logger logger = LoggerFactory.getLogger(ModuleController.class);
 	private static final SimpleDateFormat FORMAT= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	@Autowired
+	private PPMFlowService ppmFlowService;
 
 	@Autowired
 	private RepositoryService repositoryService;
@@ -155,68 +161,53 @@ public class ModuleController {
 		return res;
 	}
 
-	@RequestMapping(value = "deploy")
+	@RequestMapping(value = "transferToPPMModel")
 	@ResponseBody
-	public String deploy(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
-
+	public String transferToPPMModel(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map)
+	{
 		String res= "success";
+
 		try {
+			String processId= map.get("processId").toString();
+			ProcessDefinition processDefinition =    repositoryService
+                    .createProcessDefinitionQuery()
+                    .processDefinitionId(processId).singleResult();
+			//获取流程资源的名称
+			String sourceName = processDefinition.getResourceName();
+			//获取流程资源
+			InputStream inputStream = repositoryService.getResourceAsStream(
+                    processDefinition.getDeploymentId(),sourceName);
+			//创建转换对象
+			BpmnXMLConverter converter = new BpmnXMLConverter();
+			//读取xml文件
+			XMLInputFactory factory = XMLInputFactory.newInstance();
+			XMLStreamReader reader = factory.createXMLStreamReader(inputStream);
+			//将xml文件转换成BpmnModel
+			BpmnModel bpmnModel = converter.convertToBpmnModel(reader);
+			//验证bpmnModel是否为空
+			Process process = bpmnModel.getMainProcess();
 
-			String modelId= map.get("modelId").toString();
 
-			Model modelData = repositoryService.getModel(modelId);
-			JsonNode modelNode = new ObjectMapper().readTree(repositoryService.getModelEditorSource(modelData.getId()));
-			byte[] bpmnBytes = null;
-			BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
-			bpmnBytes = new BpmnXMLConverter().convertToXML(model);
-			String processName = modelData.getName()+ ".bpmn20.xml";
-			Deployment deployment = repositoryService.createDeployment().name(modelData.getName()).addString(processName, new String(bpmnBytes,"utf-8")).deploy();
+			List<Map> list= new ArrayList<Map>();
+			for (int i = 0; i < 10; i++) {
+				Map tacheDetail= new HashMap();
+				tacheDetail.put("tacheId", 10000000+ i);
+				tacheDetail.put("flowId", 9004);
+				tacheDetail.put("tacheName", "名称"+ i);
+				tacheDetail.put("activityName", "name"+ i);
+				tacheDetail.put("tacheDesc", "名称"+ i);
+				tacheDetail.put("tacheSpecCd", "1");
+				tacheDetail.put("tacheTypeCd", "1");
+				tacheDetail.put("weight", 1+ i);
 
-		} catch (Exception e) {
-			logger.error("部署流程异常：", e);
-			res= "error";
-		}
-
-		return res;
-	}
-
-
-	@RequestMapping(value = "queryFlows")
-	@ResponseBody
-	public String queryFlows(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
-
-		String res= "success";
-		try {
-
-			String index= map.get("index").toString();
-			String size= map.get("size").toString();
-			long count= repositoryService.createProcessDefinitionQuery().count();
-			List<ProcessDefinition> processDefinitionList= repositoryService.createProcessDefinitionQuery().orderByProcessDefinitionKey().asc().listPage(Integer.parseInt(index), Integer.parseInt(size));
-
-			JSONArray jsonArray= new JSONArray();
-			if (processDefinitionList!= null)
-			{
-				JSONObject jsonObject= null;
-				for (int i = 0; i < processDefinitionList.size(); i++) {
-					ProcessDefinition processDefinition = processDefinitionList.get(i);
-
-					jsonObject= new JSONObject();
-					jsonObject.put("id", processDefinition.getId());
-					jsonObject.put("name", processDefinition.getName());
-					jsonObject.put("key", processDefinition.getKey());
-					jsonObject.put("version", processDefinition.getVersion());
-
-					jsonArray.add(jsonObject);
-				}
+				list.add(tacheDetail);
 			}
 
-			JSONObject jsonObject= new JSONObject();
-			jsonObject.put("total", count);
-			jsonObject.put("data", jsonArray);
-			res= jsonObject.toString();
 
+			ppmFlowService.batchSave(list);
 		} catch (Exception e) {
-			logger.error("查询流程定义列表异常：", e);
+
+			logger.error("转换流程引擎模型数据到PPM业务模型数据异常", e);
 		}
 
 		return res;

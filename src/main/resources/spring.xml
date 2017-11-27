@@ -9,6 +9,6 @@
 	
 	<context:property-placeholder location="classpath:config.properties"/>
 	<!-- 扫描service自动注入为bean -->
-	<context:component-scan base-package="com.fh.server.service.impl,com.fh.server.dao.impl" />
+	<context:component-scan base-package="com.ai.nppm.activitiWeb.service,com.ai.nppm.activitiWeb.dao" />
 
 </beans>
