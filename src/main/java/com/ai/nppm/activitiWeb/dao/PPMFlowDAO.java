@@ -16,5 +16,8 @@ import java.util.Map;
 @Repository
 public interface PPMFlowDAO {
 
-    void save(Map map);
+    void saveTacheDetail(Map map);
+    void saveFlowDetail(Map map);
+    void saveTransitionDetail(Map map);
+    Long queryFlowDetail(Map map);
 }

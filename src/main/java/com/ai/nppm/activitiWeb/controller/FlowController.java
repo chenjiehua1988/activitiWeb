@@ -1,18 +1,22 @@
 package com.ai.nppm.activitiWeb.controller;
 
 import com.ai.nppm.activitiWeb.dao.PPMFlowDAO;
+import com.vaadin.terminal.ExternalResource;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
+import org.activiti.editor.ui.ConvertProcessDefinitionPopupWindow;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.explorer.ExplorerApp;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +26,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +55,7 @@ public class FlowController {
 	@ResponseBody
 	public String deploy(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
 
+		JSONObject jsonObject= new JSONObject();
 		String res= "success";
 		try {
 
@@ -58,12 +68,17 @@ public class FlowController {
 			bpmnBytes = new BpmnXMLConverter().convertToXML(model);
 			String processName = modelData.getName()+ ".bpmn20.xml";
 			Deployment deployment = repositoryService.createDeployment().name(modelData.getName()).addString(processName, new String(bpmnBytes,"utf-8")).deploy();
+
+			ProcessDefinition processDefinition= repositoryService.createProcessDefinitionQuery().deploymentId(deployment.getId()).singleResult();
+			jsonObject.put("processId", processDefinition.getId());
+
 		} catch (Exception e) {
 			logger.error("部署流程异常：", e);
 			res= "error";
 		}
 
-		return res;
+		jsonObject.put("res", res);
+		return jsonObject.toString();
 	}
 
 
@@ -105,6 +120,10 @@ public class FlowController {
 					jsonObject.put("version", processDefinition.getVersion());
 					jsonObject.put("deploymentId", processDefinition.getDeploymentId());
 
+					//查询流程定义是否已经有了可编辑模型
+					long modelCount= repositoryService.createModelQuery().modelName(processDefinition.getName()).count();
+					jsonObject.put("hasModel", modelCount== 0?false: true);
+
 					jsonArray.add(jsonObject);
 				}
 			}
@@ -135,6 +154,51 @@ public class FlowController {
 
 		} catch (Exception e) {
 			logger.error("流程删除异常：", e);
+			res= "error";
+		}
+
+		return res;
+	}
+
+	//转换流程定义到可编辑模型
+	@RequestMapping(value = "flowToModel")
+	@ResponseBody
+	private String flowToModel(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map)
+	{
+		String res= "success";
+
+		try {
+			String processId= map.get("processId").toString();
+
+			ProcessDefinition processDefinition =    repositoryService
+					.createProcessDefinitionQuery()
+					.processDefinitionId(processId).singleResult();
+
+			InputStream bpmnStream = repositoryService.getResourceAsStream(processDefinition.getDeploymentId(), processDefinition.getResourceName());
+			XMLInputFactory xif = XMLInputFactory.newInstance();
+			InputStreamReader in = new InputStreamReader(bpmnStream, "UTF-8");
+			XMLStreamReader xtr = xif.createXMLStreamReader(in);
+			BpmnModel bpmnModel = (new BpmnXMLConverter()).convertToBpmnModel(xtr);
+			if (bpmnModel.getMainProcess() != null && bpmnModel.getMainProcess().getId() != null) {
+				if (bpmnModel.getLocationMap().size() >0) {
+
+					BpmnJsonConverter converter = new BpmnJsonConverter();
+					ObjectNode modelNode = converter.convertToJson(bpmnModel);
+					Model modelData = repositoryService.newModel();
+					ObjectNode modelObjectNode = (new ObjectMapper()).createObjectNode();
+					modelObjectNode.put("name", processDefinition.getName());
+					modelObjectNode.put("revision", 1);
+					modelObjectNode.put("description", processDefinition.getName());
+					modelData.setMetaInfo(modelObjectNode.toString());
+					modelData.setName(processDefinition.getName());
+					repositoryService.saveModel(modelData);
+					repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes("utf-8"));
+
+				}
+			}
+		} catch (Exception e) {
+
+			logger.error("转换流程定义到可编辑模型异常", e);
 			res= "error";
 		}
 

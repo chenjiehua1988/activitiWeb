@@ -32,11 +32,13 @@
 					<div>
 						<el-button-group>
 							<el-button type="primary" icon="el-icon-plus-" @click="dialogFormVisible= true">新建</el-button>
-							<el-button type="primary" icon="el-icon-delete-" @click="dialogVisible= true">删除</el-button>
+							<el-button type="primary" icon="el-icon-delete-" @click="showDeleteModelDialog">删除</el-button>
 						</el-button-group>
 					</div>
 					<div>
 						<el-table
+								v-loading.body="loadingModelTable"
+								:element-loading-text=loadingModelTableText
 								:data="models"
 								border
 								style="width: 100%"
@@ -72,7 +74,7 @@
 									label="更新时间">
 							</el-table-column>
 
-							<el-table-column inline-template label="操作" ali>
+							<el-table-column inline-template label="操作">
 								<div>
 									<el-button
 											size="mini"
@@ -133,12 +135,13 @@
 								label="版本">
 						</el-table-column>
 						<el-table-column
+								v-if="false"
 								prop="deploymentId"
 								label="部署id">
 						</el-table-column>
 
 
-						<el-table-column inline-template label="操作" ali>
+						<el-table-column inline-template label="操作">
 							<div>
 								<el-button
 										size="mini"
@@ -149,6 +152,14 @@
 										type="danger"
 										@click="handleDeleteFlow(row)">删除
 								</el-button>
+								<el-tooltip class="item" effect="dark" content="转换流程定义为可编辑模型" placement="right">
+									<el-button
+											size="mini"
+											type="success"
+											:disabled="row.hasModel"
+											@click="handleFlowToModel(row)">转换
+									</el-button>
+								</el-tooltip>
 							</div>
 						</el-table-column>
 					</el-table>
@@ -268,16 +279,14 @@
                 ]
             },
 			//选中的模板列表
-			selectedModels: []
+			selectedModels: [],
+			//模型列表遮罩
+            loadingModelTable: false,
+            loadingModelTableText: '流程部署中...'
         },
     	methods:{
 
             handleClick: function(tab, event) {
-                console.log(tab, event);
-            },
-
-            openModel: function (key, keyPath) {
-                console.log(key, keyPath);
             },
 
 			//查询所有模型
@@ -303,15 +312,19 @@
             },
 
 			//查询所有流程定义
-            queryFlows: function () {
+            queryFlows: function (page) {
 
+                if (page)
+				{
+                    this.form2.page= page;
+                }
                 var vueThis= this;
                 axios.post('flow/queryFlows',{
                     index: (this.form2.page- 1)* this.form2.size,
-					size: this.form2.size
+					size: this.form2.size,
+                    flowKey: vueThis.flowKey
                 }).then(function (response) {
 
-					console.log(response);
 					if (response.status== 200)
 					{
 					    vueThis.form2.total= response.data.total;
@@ -326,27 +339,7 @@
 
             queryFlowByKey: function (val) {
 
-                this.form2.page= 1;
-
-                var vueThis= this;
-                axios.post('flow/queryFlows',{
-                    index: (this.form2.page- 1)* this.form2.size,
-                    size: this.form2.size,
-					flowKey: vueThis.flowKey
-                }).then(function (response) {
-
-                    console.log(response);
-                    if (response.status== 200)
-                    {
-                        vueThis.form2.total= response.data.total;
-                        vueThis.flows= response.data.data;
-                    }
-
-                }).catch(function (error) {
-                    console.log('[ppm err]')
-                    console.log(error);
-                });
-
+                this.queryFlows(1);
             },
 
             init: function () {
@@ -367,6 +360,8 @@
             },
 			handleDeploy: function (row) {
 
+                this.loadingModelTable= true;
+
                 var modelId= row.id;
 
                 var vueThis= this;
@@ -374,16 +369,44 @@
                     modelId: modelId
                 }).then(function (response) {
 
-                    console.log(response);
-                    if (response.status== 200)
+                    if (response.status== 200&&response.data.res=='success')
                     {
+                        var processId= response.data.processId;
+
                         vueThis.$message({
                             message: '部署流程成功',
                             type: 'success'
                         });
 
-                        //自动刷新流程定义列表
-                        vueThis.init();
+                        setTimeout(function () {
+
+                            vueThis.loadingModelTableText= '转换工作流引擎模型数据-->PPM业务模型数据';
+                            //转换工作流引擎模型数据到ppm业务模型数据
+                            axios.post('model/transferToPPMModel',{
+                                processId: processId
+                            }).then(function (response) {
+
+                                setTimeout(function () {
+                                    if (response.status== 200&&response.data=='success')
+                                    {
+                                        vueThis.loadingModelTable= false;
+
+                                        vueThis.$message({
+                                            message: '转换工作流引擎模型数据到ppm业务模型数据成功',
+                                            type: 'success'
+                                        });
+
+                                        //自动刷新流程定义列表
+                                        vueThis.init();
+                                    }
+                                }, 3000);
+
+                            }).catch(function (error) {
+                                console.log('[ppm err]');
+                                console.log(error);
+                            });
+
+                        }, 3000);
                     }
 
                 }).catch(function (error) {
@@ -503,7 +526,7 @@
                         deploymentId: this.deploymentId
                     }).then(function (response) {
 
-                        if (response.status== 200)
+                        if (response.status== 200&&response.data=='success')
                         {
                             vueThis.$message({
                                 message: '流程定义删除成功',
@@ -512,12 +535,64 @@
 
                             vueThis.init();
                         }
+                        else
+						{
+                            vueThis.$message({
+                                message: '流程定义删除异常',
+                                type: 'error'
+                            });
+						}
 
                     }).catch(function (error) {
                         console.log('[ppm err]');
                         console.log(error);
                     });
                 }
+            },
+
+            handleFlowToModel: function (row) {
+
+                var vueThis= this;
+                axios.post('flow/flowToModel',{
+                    processId: row.id
+                }).then(function (response) {
+
+                    if (response.status== 200&&response.data=='success')
+                    {
+                        vueThis.$message({
+                            message: '流程定义转换为可编辑模型成功',
+                            type: 'success'
+                        });
+
+                        vueThis.init();
+                    }
+                    else
+                    {
+                        vueThis.$message({
+                            message: '流程定义转换为可编辑模型异常',
+                            type: 'error'
+                        });
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]');
+                    console.log(error);
+                });
+            },
+
+            showDeleteModelDialog: function () {
+
+                if(this.selectedModels.length> 0)
+				{
+                    this.dialogVisible= true;
+                }
+                else
+				{
+                    this.$message({
+                        message: '请选择需要删除的模型',
+                        type: 'error'
+                    });
+				}
             }
     	},
 		computed: {

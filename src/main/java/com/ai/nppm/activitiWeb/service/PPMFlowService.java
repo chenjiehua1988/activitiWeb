@@ -16,5 +16,35 @@ import java.util.Map;
 
 public interface PPMFlowService {
 
-    void batchSave(List<Map> list);
+    /**
+     * 批量保存tache_detail
+     * @param list
+     */
+    void batchSaveTacheDetail(List<Map> list);
+
+    /**
+     * 批量保存transition_detail
+     * @param list
+     */
+    void batchSaveTransitionDetail(List<Map> list);
+
+    /**
+     * 保存flow_detail
+     * @param map
+     */
+    void saveFlowDetail(Map map);
+
+    /**
+     * 转换工作流模型到ppm业务模型
+     * @param processId
+     */
+    void transferToPPMModel(String processId)throws Exception;
+
+    /**
+     * 查询是否已经存在flow_detail
+     * @param map
+     * @return
+     */
+    Long queryFlowDetail(Map map);
+
 }

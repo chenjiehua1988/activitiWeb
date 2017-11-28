@@ -3,7 +3,7 @@
 		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ai.nppm.activitiWeb.dao.PPMFlowDAO">
 
-	<insert id="save" parameterType="java.util.Map">
+	<insert id="saveTacheDetail" parameterType="java.util.Map">
 		insert into tache_detail
 		  (tache_id,
 		   flow_id,
@@ -27,6 +27,48 @@
 			#{weight,jdbcType=DECIMAL},
 			'N'
 			)
-
 	</insert>
+
+	<insert id="saveFlowDetail" parameterType="java.util.Map">
+		insert into flow_detail
+		  (flow_id, f_pdkey, version_code, create_date, state)
+		values
+		  (
+		  	#{flowId,jdbcType=DECIMAL},
+		  	#{fPdKey,jdbcType=VARCHAR},
+			'v1.0',
+			sysdate,
+			'1'
+		  )
+	</insert>
+
+	<insert id="saveTransitionDetail" parameterType="java.util.Map">
+		insert into transition_detail(transition_id,
+                              trans_name,
+                              transition_name,
+                              transition_desc,
+                              transition_type,
+                              from_tache_id,
+                              to_tache_id,
+                              flow_id,
+                              transition_seq)
+		values
+		(
+		#{transitionId,jdbcType=DECIMAL},
+		#{transName,jdbcType=VARCHAR},
+		#{transitionName,jdbcType=VARCHAR},
+		#{transitionDesc,jdbcType=VARCHAR},
+		#{transitionType,jdbcType=VARCHAR},
+		#{fromTacheId,jdbcType=DECIMAL},
+		#{toTacheId,jdbcType=DECIMAL},
+		#{flowId,jdbcType=DECIMAL},
+		#{transitionSeq,jdbcType=DECIMAL}
+		)
+	</insert>
+
+	<select id="queryFlowDetail" parameterType="java.util.Map" resultType="java.lang.Long">
+		select count(1) from flow_detail
+		 where 1=1
+		 and  f_pdkey=#{fPdKey,jdbcType=VARCHAR}
+	</select>
 </mapper>

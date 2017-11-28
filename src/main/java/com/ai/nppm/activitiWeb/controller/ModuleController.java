@@ -2,18 +2,12 @@ package com.ai.nppm.activitiWeb.controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
 import com.ai.nppm.activitiWeb.service.PPMFlowService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.activiti.bpmn.converter.BpmnXMLConverter;
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.Process;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Model;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
@@ -23,15 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping("/model")
@@ -45,7 +33,8 @@ public class ModuleController {
 
 	@Autowired
 	private RepositoryService repositoryService;
-	
+
+
 	@RequestMapping(value = "create")
 	@ResponseBody
 	public String create(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
@@ -169,47 +158,15 @@ public class ModuleController {
 
 		try {
 			String processId= map.get("processId").toString();
-			ProcessDefinition processDefinition =    repositoryService
-                    .createProcessDefinitionQuery()
-                    .processDefinitionId(processId).singleResult();
-			//获取流程资源的名称
-			String sourceName = processDefinition.getResourceName();
-			//获取流程资源
-			InputStream inputStream = repositoryService.getResourceAsStream(
-                    processDefinition.getDeploymentId(),sourceName);
-			//创建转换对象
-			BpmnXMLConverter converter = new BpmnXMLConverter();
-			//读取xml文件
-			XMLInputFactory factory = XMLInputFactory.newInstance();
-			XMLStreamReader reader = factory.createXMLStreamReader(inputStream);
-			//将xml文件转换成BpmnModel
-			BpmnModel bpmnModel = converter.convertToBpmnModel(reader);
-			//验证bpmnModel是否为空
-			Process process = bpmnModel.getMainProcess();
 
-
-			List<Map> list= new ArrayList<Map>();
-			for (int i = 0; i < 10; i++) {
-				Map tacheDetail= new HashMap();
-				tacheDetail.put("tacheId", 10000000+ i);
-				tacheDetail.put("flowId", 9004);
-				tacheDetail.put("tacheName", "名称"+ i);
-				tacheDetail.put("activityName", "name"+ i);
-				tacheDetail.put("tacheDesc", "名称"+ i);
-				tacheDetail.put("tacheSpecCd", "1");
-				tacheDetail.put("tacheTypeCd", "1");
-				tacheDetail.put("weight", 1+ i);
-
-				list.add(tacheDetail);
-			}
-
-
-			ppmFlowService.batchSave(list);
+			ppmFlowService.transferToPPMModel(processId);
 		} catch (Exception e) {
 
 			logger.error("转换流程引擎模型数据到PPM业务模型数据异常", e);
+			res= "error";
 		}
 
 		return res;
 	}
+
 }
