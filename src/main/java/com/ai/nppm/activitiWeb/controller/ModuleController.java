@@ -145,23 +145,4 @@ public class ModuleController {
 		return res;
 	}
 
-	@RequestMapping(value = "transferToPPMModel")
-	@ResponseBody
-	public String transferToPPMModel(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map)
-	{
-		String res= "success";
-
-		try {
-			String processId= map.get("processId").toString();
-
-			ppmFlowService.transferToPPMModel(processId);
-		} catch (Exception e) {
-
-			logger.error("转换流程引擎模型数据到PPM业务模型数据异常", e);
-			res= "error";
-		}
-
-		return res;
-	}
-
 }

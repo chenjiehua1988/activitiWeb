@@ -379,64 +379,28 @@
                     modelId: modelId
                 }).then(function (response) {
 
-                    if (response.status== 200&&response.data.res=='success')
-                    {
-                        var processId= response.data.processId;
+                    setTimeout(function () {
 
-                        vueThis.$message({
-                            message: '部署流程成功',
-                            type: 'success'
-                        });
+                        if (response.status== 200&&response.data.res=='success')
+                        {
 
-                        setTimeout(function () {
-
-                            vueThis.loadingModelTableText= '转换工作流引擎模型数据-->PPM业务模型数据';
-                            //转换工作流引擎模型数据到ppm业务模型数据
-                            axios.post('model/transferToPPMModel',{
-                                processId: processId
-                            }).then(function (response) {
-
-                                setTimeout(function () {
-                                    if (response.status== 200&&response.data=='success')
-                                    {
-
-                                        vueThis.$message({
-                                            message: '转换工作流引擎模型数据到ppm业务模型数据成功',
-                                            type: 'success'
-                                        });
-
-                                        //自动刷新流程定义列表
-                                        vueThis.init();
-                                    }
-                                    else
-									{
-
-                                        vueThis.$message({
-                                            message: '转换工作流引擎模型数据到ppm业务模型数据异常',
-                                            type: 'error'
-                                        });
-									}
-
-                                    vueThis.loadingModelTable= false;
-                                    vueThis.loadingModelTableText= '流程部署中...';
-                                }, 3000);
-
-                            }).catch(function (error) {
-                                console.log('[ppm err]');
-                                console.log(error);
+                            vueThis.$message({
+                                message: '部署流程成功',
+                                type: 'success'
                             });
 
-                        }, 3000);
-                    }
-                    else
-					{
-                        vueThis.loadingModelTable= false;
+                            vueThis.init();
+                        }
+                        else
+                        {
 
-                        vueThis.$message({
-                            message: '流程部署异常',
-                            type: 'error'
-                        });
-                    }
+                            vueThis.$message({
+                                message: '流程部署异常',
+                                type: 'error'
+                            });
+                        }
+                        vueThis.loadingModelTable= false;
+                    }, 3000);
 
                 }).catch(function (error) {
                     console.log('[ppm err]');
