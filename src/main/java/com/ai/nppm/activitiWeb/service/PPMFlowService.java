@@ -45,6 +45,13 @@ public interface PPMFlowService {
      * @param map
      * @return
      */
-    Long queryFlowDetail(Map map);
+    List<Map> queryFlowDetail(Map map);
+
+    /**
+     * 删除ppm模型数据
+     * @param flowId
+     */
+    void removePPMDataByFlowId(Long flowId);
+
 
 }

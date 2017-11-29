@@ -66,9 +66,17 @@
 		)
 	</insert>
 
-	<select id="queryFlowDetail" parameterType="java.util.Map" resultType="java.lang.Long">
-		select count(1) from flow_detail
+	<select id="queryFlowDetail" parameterType="java.util.Map" resultType="java.util.Map">
+		select t.flow_id as "flowId" from flow_detail t
 		 where 1=1
 		 and  f_pdkey=#{fPdKey,jdbcType=VARCHAR}
 	</select>
+
+	<delete id="removePPMDataByFlowId" parameterType="java.lang.Long">
+		BEGIN
+		DELETE from flow_detail where flow_id= #{flowId,jdbcType=DECIMAL};
+		DELETE from tache_detail where flow_id= #{flowId,jdbcType=DECIMAL};
+		DELETE from transition_detail where flow_id= #{flowId,jdbcType=DECIMAL};
+		END ;
+	</delete>
 </mapper>

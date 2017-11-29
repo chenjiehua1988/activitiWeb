@@ -39,8 +39,7 @@ public class ModuleController {
 	@ResponseBody
 	public String create(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
 
-		JSONObject jsonObject= new JSONObject();
-		jsonObject.put("modelId", "-1");
+		String res= "success";
 		try {
 
 			String name= map.get("name").toString();
@@ -69,16 +68,12 @@ public class ModuleController {
 		  repositoryService.saveModel(modelData);
 		  repositoryService.addModelEditorSource(modelData.getId(), editorNode.toString().getBytes("utf-8"));
 
-		  if(modelData.getId()!= null&&!"".equals(modelData.getId()))
-		  {
-		  	jsonObject.put("modelId", modelData.getId());
-		  }
-
 		} catch (Exception e) {
 		  logger.error("创建模型失败：", e);
+		  res= "error";
 		}
 
-		return jsonObject.toString();
+		return res;
 	  }
 
 	@RequestMapping(value = "queryModels")

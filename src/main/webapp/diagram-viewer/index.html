@@ -28,11 +28,23 @@
       border: none;
       background: none;
     }
+
+    .back{
+      position: absolute;
+      margin-top: 6px;
+      border: 0px solid red;
+      width: 100%;
+      text-align: left;
+      text-decoration: none;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
 <div class="wrapper">
-  <div id="pb1"></div>
+  <div id="pb1" onclick="window.location.href='/activitiWeb/main.html?activeName=second'" style="cursor: pointer">
+    <a class="back" href="/activitiWeb/main.html?activeName=second">返回</a>
+  </div>
   <div id="overlayBox" >
     <div id="diagramBreadCrumbs" class="diagramBreadCrumbs" onmousedown="return false" onselectstart="return false"></div>
     <div id="diagramHolder" class="diagramHolder"></div>
