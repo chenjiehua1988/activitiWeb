@@ -9,6 +9,7 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
@@ -18,14 +19,13 @@ import java.util.*;
 /**
  * Created by IntelliJ IDEA.
  * Author: cjh
- * Date: 2017/11/27
- * Time: 10:58
+ * Date: 2017/11/29
+ * Time: 10:33
  * Description：该类的作用
  * To change this template use File | Settings | File Templates.
  */
 @Service
 public class PPMFlowServiceImpl implements PPMFlowService {
-
 
     @Autowired
     private PPMFlowDAO ppmFlow;
@@ -68,14 +68,14 @@ public class PPMFlowServiceImpl implements PPMFlowService {
     @Override
     public void transferToPPMModel(String processId) throws Exception{
 
+        List<Map> flowDetailList= null;
+
         ProcessDefinition processDefinition= repositoryService
                 .createProcessDefinitionQuery()
                 .processDefinitionId(processId).singleResult();
-        //获取流程资源的名称
-        String sourceName = processDefinition.getResourceName();
         //获取流程资源
         InputStream inputStream = repositoryService.getResourceAsStream(
-                processDefinition.getDeploymentId(),sourceName);
+                processDefinition.getDeploymentId(),processDefinition.getResourceName());
         //创建转换对象
         BpmnXMLConverter converter = new BpmnXMLConverter();
         //读取xml文件
@@ -131,7 +131,6 @@ public class PPMFlowServiceImpl implements PPMFlowService {
                 }
                 else if (flowElement instanceof UserTask)
                 {
-                    //第二个节点
                     UserTask userTask= (UserTask) flowElement;
                     List<SequenceFlow> list= userTask.getIncomingFlows();
                     for (int i = 0; i < list.size(); i++) {
@@ -196,7 +195,13 @@ public class PPMFlowServiceImpl implements PPMFlowService {
         }
 
         //4、保存之前先删除表中老数据
-        System.out.println(this.queryFlowDetail(flowDetail));
+        flowDetailList= this.queryFlowDetail(flowDetail);
+        if (flowDetailList!= null&&flowDetailList.size()> 0)
+        {
+            String flowId= flowDetailList.get(0).get("flowId").toString();
+
+            this.removePPMDataByFlowId(Long.valueOf(flowId));
+        }
 
 
         //5、保存业务数据到数据库 flow_detail,tache_detail,transition_detail
@@ -283,8 +288,14 @@ public class PPMFlowServiceImpl implements PPMFlowService {
     }
 
     @Override
-    public Long queryFlowDetail(Map map) {
+    public List<Map> queryFlowDetail(Map map) {
 
         return ppmFlow.queryFlowDetail(map);
+    }
+
+    @Override
+    public void removePPMDataByFlowId(Long flowId) {
+
+        ppmFlow.removePPMDataByFlowId(flowId);
     }
 }
