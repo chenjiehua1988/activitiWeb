@@ -74,9 +74,9 @@
 
 	<delete id="removePPMDataByFlowId" parameterType="java.lang.Long">
 		BEGIN
-		DELETE from flow_detail where flow_id= #{flowId,jdbcType=DECIMAL};
 		DELETE from tache_detail where flow_id= #{flowId,jdbcType=DECIMAL};
 		DELETE from transition_detail where flow_id= #{flowId,jdbcType=DECIMAL};
+		DELETE from flow_detail where flow_id= #{flowId,jdbcType=DECIMAL};
 		END ;
 	</delete>
 </mapper>

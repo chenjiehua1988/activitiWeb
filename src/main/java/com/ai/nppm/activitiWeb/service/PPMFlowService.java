@@ -35,12 +35,6 @@ public interface PPMFlowService {
     void saveFlowDetail(Map map);
 
     /**
-     * 转换工作流模型到ppm业务模型
-     * @param processId
-     */
-    void transferToPPMModel(String processId)throws Exception;
-
-    /**
      * 查询是否已经存在flow_detail
      * @param map
      * @return
