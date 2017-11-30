@@ -225,6 +225,19 @@ public class ModuleController {
 				tacheDetail.put("tacheDesc", flowElement.getName());
 				tacheDetail.put("tacheSpecCd", "1");
 				tacheDetail.put("tacheTypeCd", "1");
+
+				//判断是否是自动环节
+				if(StringUtils.isNotEmpty(flowElement.getName())&&StringUtils.containsIgnoreCase(flowElement.getName(), "自动"))
+				{
+					tacheDetail.put("tacheTypeCd", "-7");
+				}
+
+				//判断是否可以在发布管理菜单可见
+				if(StringUtils.isNotEmpty(flowElement.getName())&&("计费配置".equals(flowElement.getName())||"CRM配置".equals(flowElement.getName())))
+				{
+					tacheDetail.put("tacheSpecCd", "6");
+				}
+
 				if (flowElement instanceof StartEvent)
 				{
 					//开始
