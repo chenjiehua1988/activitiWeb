@@ -30,6 +30,7 @@
 	</insert>
 
 	<insert id="saveFlowDetail" parameterType="java.util.Map">
+	BEGIN
 		insert into flow_detail
 		  (flow_id, f_pdkey, version_code, create_date, state)
 		values
@@ -39,7 +40,26 @@
 			'v1.0',
 			sysdate,
 			'1'
-		  )
+		  );
+		 insert into flow_template(flow_template_id,
+						 flow_template_name,
+						 flow_id,
+						 description,
+						 create_staff,
+						 create_date,
+						 state)
+		 values
+		  (
+		  	#{flowId,jdbcType=DECIMAL},
+		  	#{name,jdbcType=VARCHAR},
+		  	#{flowId,jdbcType=DECIMAL},
+		  	#{name,jdbcType=VARCHAR},
+			'1001',
+			sysdate,
+			'1'
+		  );
+
+	END ;
 	</insert>
 
 	<insert id="saveTransitionDetail" parameterType="java.util.Map">
@@ -67,9 +87,42 @@
 	</insert>
 
 	<select id="queryFlowDetail" parameterType="java.util.Map" resultType="java.util.Map">
-		select t.flow_id as "flowId" from flow_detail t
-		 where 1=1
-		 and  f_pdkey=#{fPdKey,jdbcType=VARCHAR}
+		select t.flow_id             as "flowId",
+		ft.flow_template_name as "name",
+		t.f_pdkey             as "key",
+		t.version_code        as "version"
+		from flow_detail t, flow_template ft
+		where 1 = 1
+		and t.flow_id = ft.flow_id
+		<if test="fPdKey != null and fPdKey != ''">
+			and  f_pdkey=#{fPdKey,jdbcType=VARCHAR}
+		</if>
+		order by t.flow_id asc
+	</select>
+
+	<select id="queryTacheDetails" parameterType="java.util.Map" resultType="java.util.Map">
+		select
+			t.tache_id      as "tacheId",
+			tache_name      as "tacheName",
+			t.activity_name as "activityName",
+			t.tache_spec_cd as "tacheSpecCd",
+			t.tache_type_cd as "tacheTypeCd"
+			from tache_detail t
+		where 1 = 1
+		<if test="flowId != null and flowId != ''">
+			and  flow_id=#{flowId,jdbcType=VARCHAR}
+		</if>
+		order by t.tache_id asc
+	</select>
+
+	<select id="queryTransitionDetails" parameterType="java.util.Map" resultType="java.util.Map">
+		select t.transition_id as "transitionId", t.trans_name as "transName", t.transition_type as "transitionType"
+		from transition_detail t
+		where 1 = 1
+		<if test="flowId != null and flowId != ''">
+			and  flow_id=#{flowId,jdbcType=VARCHAR}
+		</if>
+		order by t.transition_id asc
 	</select>
 
 	<delete id="removePPMDataByFlowId" parameterType="java.lang.Long">

@@ -211,6 +211,7 @@ public class ModuleController {
 			Map flowDetail= new HashMap();
 			flowDetail.put("flowId", FORMAT2.format(now));
 			flowDetail.put("fPdKey", processDefinition.getKey());
+			flowDetail.put("name", processDefinition.getName());
 
 			//2、保存所有的流程节点  tache_detail
 			Map<String, Map<String, Object>> tacheMap= new HashMap<String, Map<String, Object>>();

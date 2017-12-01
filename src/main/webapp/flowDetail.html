@@ -1,0 +1,239 @@
+<!doctype html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="description" content="江苏PPM工作流管理平台">
+	<meta name="viewport"
+		  content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, width=device-width">
+    <title>江苏PPM工作流管理平台</title>
+	<link rel="stylesheet" href="assets/css/elestyle/theme/index.css">
+    <script src="assets/js/plugins/axios/axios.min.js"></script>
+    <script src="assets/js/plugins/vue/vue.js" ></script>
+	<script src="assets/js/plugins/eleme/element.js"></script>
+	<style>
+
+	</style>
+</head>
+<body>
+
+<div id="main">
+	<div>
+		<el-tabs v-model="activeName" @tab-click="handleClick">
+			<el-tab-pane label="流程环节" name="first">
+				<div>
+					<div>
+						<el-table
+								:data="tacheDetails"
+								border
+								style="width: 100%"
+								>
+							<el-table-column
+									prop="tacheId"
+									label="环节Id"
+									width="180">
+							</el-table-column>
+							<el-table-column
+									prop="tacheName"
+									label="环节名称"
+									width="180">
+							</el-table-column>
+							<el-table-column
+									prop="activityName"
+									label="流程环节名称">
+							</el-table-column>
+							<el-table-column
+									prop="tacheSpecCd"
+									label="环节规格"
+									:formatter="tacheSpecCdFormatter">
+							</el-table-column>
+							<el-table-column
+									prop="tacheTypeCd"
+									label="环节类型"
+									:formatter="tacheTypeCdFormatter">
+							</el-table-column>
+
+							<el-table-column inline-template label="操作">
+								<div>
+
+								</div>
+							</el-table-column>
+						</el-table>
+					</div>
+				</div>
+			</el-tab-pane>
+			<el-tab-pane label="流程流向" name="second">
+
+				<div>
+					<el-table
+							:data="transitionDetails"
+							border
+							style="width: 100%"
+							>
+
+						<el-table-column
+								prop="transitionId"
+								label="流向Id"
+								width="180">
+						</el-table-column>
+						<el-table-column
+								prop="transName"
+								label="流向名称"
+								width="300">
+						</el-table-column>
+						<el-table-column
+								prop="transitionType"
+								label="流向类型"
+								:formatter="transitionTypeFormatter">
+						</el-table-column>
+
+						<el-table-column inline-template label="操作">
+							<div>
+
+							</div>
+						</el-table-column>
+					</el-table>
+				</div>
+
+			</el-tab-pane>
+		</el-tabs>
+
+	</div>
+
+
+</div>
+
+
+<style>
+
+
+</style>
+
+
+<script>
+    new Vue({
+    	el:"#main",
+        beforeMount: function () {
+
+    	    var flowId= this.getParameterByName("flowId");
+    	    if (flowId&&flowId!= "")
+			{
+			    this.flowId= flowId;
+			}
+            //主数据
+            this.init();
+        },
+    	data: {
+
+            activeName: "first",
+            flowId: "",
+			//环节列表
+            tacheDetails: [],
+			//流程定义列表
+            transitionDetails: []
+        },
+    	methods:{
+
+            handleClick: function(tab, event) {
+            },
+
+
+			//查询所有ppm流程环节
+            queryTacheDetails: function () {
+
+                var vueThis= this;
+                axios.post('flow/queryTacheDetails',{
+
+                    flowId: vueThis.flowId
+                }).then(function (response) {
+
+					if (response.status== 200)
+					{
+                        vueThis.tacheDetails= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+			//查询所有ppm流程流向
+            queryTransitionDetails: function () {
+
+                var vueThis= this;
+                axios.post('flow/queryTransitionDetails',{
+
+                    flowId: vueThis.flowId
+                }).then(function (response) {
+
+					if (response.status== 200)
+					{
+                        vueThis.transitionDetails= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+            init: function () {
+
+			    this.queryTacheDetails();
+			    this.queryTransitionDetails();
+            },
+
+
+            getParameterByName: function (name) {
+                name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+                var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                    results = regex.exec(location.search);
+                return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+            },
+
+            tacheSpecCdFormatter: function (row, column) {
+
+				if (row["tacheSpecCd"]+"" == "6") {
+					return "发布管理环节";
+				}
+                return '普通环节';
+            },
+
+            tacheTypeCdFormatter: function (row, column) {
+
+				if (row["tacheTypeCd"]+"" == "START_EVENT") {
+					return "开始环节";
+				}else if (row["tacheTypeCd"]+"" == "END_EVENT") {
+					return "结束环节";
+				}else if (row["tacheTypeCd"]+"" == "-2") {
+					return "第二个环节";
+				}else if (row["tacheTypeCd"]+"" == "-7") {
+					return "自动环节";
+				}
+                return '普通环节';
+            },
+
+            transitionTypeFormatter: function (row, column) {
+
+				if (row["transitionType"]+"" == "0") {
+					return "正向";
+				}
+                return '逆向';
+            },
+    	},
+		computed: {
+
+		}
+    });
+</script>
+</body>
+</html>
+

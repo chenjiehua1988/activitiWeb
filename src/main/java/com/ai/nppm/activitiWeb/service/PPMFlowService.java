@@ -35,11 +35,25 @@ public interface PPMFlowService {
     void saveFlowDetail(Map map);
 
     /**
-     * 查询是否已经存在flow_detail
+     * 查询flow_detail
      * @param map
      * @return
      */
     List<Map> queryFlowDetail(Map map);
+
+    /**
+     * 查询tache_detail
+     * @param map
+     * @return
+     */
+    List<Map> queryTacheDetails(Map map);
+
+    /**
+     * 查询transition_detail
+     * @param map
+     * @return
+     */
+    List<Map> queryTransitionDetails(Map map);
 
     /**
      * 删除ppm模型数据

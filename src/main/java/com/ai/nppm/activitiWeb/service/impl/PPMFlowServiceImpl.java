@@ -62,4 +62,15 @@ public class PPMFlowServiceImpl implements PPMFlowService {
 
         ppmFlow.removePPMDataByFlowId(flowId);
     }
+
+    @Override
+    public List<Map> queryTacheDetails(Map map) {
+
+        return ppmFlow.queryTacheDetails(map);
+    }
+
+    @Override
+    public List<Map> queryTransitionDetails(Map map) {
+        return ppmFlow.queryTransitionDetails(map);
+    }
 }

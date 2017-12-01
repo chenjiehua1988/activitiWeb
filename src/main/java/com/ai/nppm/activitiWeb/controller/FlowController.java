@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -205,4 +206,122 @@ public class FlowController {
 		return res;
 	}
 
+
+
+	@RequestMapping(value = "queryFlowDetails")
+	@ResponseBody
+	public String queryFlowDetails(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			List<Map> mapList= ppmFlow.queryFlowDetail(new HashMap());
+
+
+			JSONArray jsonArray= new JSONArray();
+			if (mapList!= null)
+			{
+				JSONObject jsonObject= null;
+				for (int i = 0; i < mapList.size(); i++) {
+					Map tacheDetail = mapList.get(i);
+
+					jsonObject= new JSONObject();
+					jsonObject.put("id", tacheDetail.get("flowId"));
+					jsonObject.put("name", tacheDetail.get("name"));
+					jsonObject.put("key", tacheDetail.get("key"));
+					jsonObject.put("version", tacheDetail.get("version"));
+
+					jsonArray.add(jsonObject);
+				}
+			}
+
+			JSONObject jsonObject= new JSONObject();
+			jsonObject.put("total", mapList.size());
+			jsonObject.put("data", jsonArray);
+			res= jsonObject.toString();
+
+		} catch (Exception e) {
+			logger.error("查询ppm流程列表异常：", e);
+		}
+
+		return res;
+	}
+
+	@RequestMapping(value = "queryTacheDetails")
+	@ResponseBody
+	public String queryTacheDetails(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			List<Map> mapList= ppmFlow.queryTacheDetails(map);
+
+
+			JSONArray jsonArray= new JSONArray();
+			if (mapList!= null)
+			{
+				JSONObject jsonObject= null;
+				for (int i = 0; i < mapList.size(); i++) {
+					Map tacheDetail = mapList.get(i);
+
+					jsonObject= new JSONObject();
+					jsonObject.put("tacheId", tacheDetail.get("tacheId"));
+					jsonObject.put("tacheName", tacheDetail.get("tacheName"));
+					jsonObject.put("activityName", tacheDetail.get("activityName"));
+					jsonObject.put("tacheSpecCd", tacheDetail.get("tacheSpecCd"));
+					jsonObject.put("tacheTypeCd", tacheDetail.get("tacheTypeCd"));
+
+					jsonArray.add(jsonObject);
+				}
+			}
+
+			JSONObject jsonObject= new JSONObject();
+			jsonObject.put("total", mapList.size());
+			jsonObject.put("data", jsonArray);
+			res= jsonObject.toString();
+
+		} catch (Exception e) {
+			logger.error("查询ppm流程节点列表异常：", e);
+		}
+
+		return res;
+	}
+
+	@RequestMapping(value = "queryTransitionDetails")
+	@ResponseBody
+	public String queryTransitionDetails(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			List<Map> mapList= ppmFlow.queryTransitionDetails(map);
+
+
+			JSONArray jsonArray= new JSONArray();
+			if (mapList!= null)
+			{
+				JSONObject jsonObject= null;
+				for (int i = 0; i < mapList.size(); i++) {
+					Map transitionDetail = mapList.get(i);
+
+					jsonObject= new JSONObject();
+					jsonObject.put("transitionId", transitionDetail.get("transitionId"));
+					jsonObject.put("transName", transitionDetail.get("transName"));
+					jsonObject.put("transitionType", transitionDetail.get("transitionType"));
+
+					jsonArray.add(jsonObject);
+				}
+			}
+
+			JSONObject jsonObject= new JSONObject();
+			jsonObject.put("total", mapList.size());
+			jsonObject.put("data", jsonArray);
+			res= jsonObject.toString();
+
+		} catch (Exception e) {
+			logger.error("查询ppm流程流向列表异常：", e);
+		}
+
+		return res;
+	}
 }

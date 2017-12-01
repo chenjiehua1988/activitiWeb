@@ -175,6 +175,49 @@
 				</div>
 
 			</el-tab-pane>
+			<el-tab-pane label="PPM流程模型" name="third">
+
+				<div>
+					<el-table
+							:data="flowDetails"
+							border
+							style="width: 100%"
+							>
+
+						<el-table-column
+								prop="id"
+								label="id"
+								width="180">
+						</el-table-column>
+						<el-table-column
+								prop="name"
+								label="名称"
+								width="300">
+						</el-table-column>
+						<el-table-column
+								prop="key"
+								label="key"
+								width="300">
+						</el-table-column>
+						<el-table-column
+								prop="version"
+								label="版本"
+								align="center">
+						</el-table-column>
+
+
+						<el-table-column inline-template label="操作" align="center">
+							<div>
+								<el-button
+										size="mini"
+										@click="handleEditFlowDetail(row)">编辑
+								</el-button>
+							</div>
+						</el-table-column>
+					</el-table>
+				</div>
+
+			</el-tab-pane>
 		</el-tabs>
 
 	</div>
@@ -292,7 +335,9 @@
             loadingModelTableText: '流程部署中...',
 			//流程列表遮罩
             loadingFlowTable: false,
-            loadingFlowTableText: '流程转换模型中...'
+            loadingFlowTableText: '流程转换模型中...',
+			//flow_detail表数据
+            flowDetails: []
         },
     	methods:{
 
@@ -347,6 +392,25 @@
                 });
             },
 
+			//查询所有ppm流程定义
+            queryFlowDetails: function () {
+
+                var vueThis= this;
+                axios.post('flow/queryFlowDetails',{
+
+                }).then(function (response) {
+
+					if (response.status== 200)
+					{
+                        vueThis.flowDetails= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
             queryFlowByKey: function (val) {
 
                 this.queryFlows(1);
@@ -356,6 +420,7 @@
 
 			    this.queryModels();
 			    this.queryFlows();
+                this.queryFlowDetails();
             },
 
             onSubmit: function () {
@@ -548,6 +613,11 @@
 			handleViewFlow: function (row) {
 
                 window.location.href= "diagram-viewer/index.html?processDefinitionId="+ row.id;
+            },
+
+            handleEditFlowDetail: function (row) {
+
+                window.location.href= "flowDetail.html?flowId="+ row.id;
             },
 
             filterFlow: function (value, row) {
