@@ -324,4 +324,39 @@ public class FlowController {
 
 		return res;
 	}
+
+	@RequestMapping(value = "updateTacheDetail")
+	@ResponseBody
+	public String updateTacheDetail(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			ppmFlow.updateTacheDetail(map);
+
+		} catch (Exception e) {
+			logger.error("更新tacheDetail异常：", e);
+			res= "error";
+		}
+
+		return res;
+	}
+
+
+	@RequestMapping(value = "updateTransitionDetail")
+	@ResponseBody
+	public String updateTransitionDetail(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			ppmFlow.updateTransitionDetail(map);
+
+		} catch (Exception e) {
+			logger.error("更新transitionDetail异常：", e);
+			res= "error";
+		}
+
+		return res;
+	}
 }

@@ -59,7 +59,17 @@ public interface PPMFlowService {
      * 删除ppm模型数据
      * @param flowId
      */
-    void removePPMDataByFlowId(Long flowId);
+    void removePPMDataByFlowId(Map map);
 
+    /**
+     * 更新tache_detail
+     * @param map
+     */
+    void updateTacheDetail(Map map);
 
+    /**
+     * 更新transition_detail
+     * @param map
+     */
+    void updateTransitionDetail(Map map);
 }

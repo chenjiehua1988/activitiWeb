@@ -125,11 +125,35 @@
 		order by t.transition_id asc
 	</select>
 
-	<delete id="removePPMDataByFlowId" parameterType="java.lang.Long">
+	<delete id="removePPMDataByFlowId" parameterType="java.util.Map">
 		BEGIN
 		DELETE from tache_detail where flow_id= #{flowId,jdbcType=DECIMAL};
 		DELETE from transition_detail where flow_id= #{flowId,jdbcType=DECIMAL};
-		DELETE from flow_detail where flow_id= #{flowId,jdbcType=DECIMAL};
+		UPDATE flow_template set flow_template_name=#{name,jdbcType=VARCHAR},description=#{name,jdbcType=VARCHAR} where flow_id= #{flowId,jdbcType=DECIMAL};
 		END ;
 	</delete>
+	
+	<update id="updateTacheDetail" parameterType="java.util.Map">
+		update tache_detail
+		<set>
+			<if test="tacheSpecCd!=null and tacheSpecCd!=''">
+				tache_spec_cd=#{tacheSpecCd,jdbcType=VARCHAR},
+			</if>
+			<if test="tacheTypeCd!=null and tacheTypeCd!=''">
+				tache_type_cd=#{tacheTypeCd,jdbcType=VARCHAR}
+			</if>
+		</set>
+		where tache_id=#{tacheId,jdbcType=DECIMAL}
+	</update>
+
+
+	<update id="updateTransitionDetail" parameterType="java.util.Map">
+		update transition_detail
+		<set>
+			<if test="transitionType!=null and transitionType!=''">
+				transition_type=#{transitionType,jdbcType=VARCHAR}
+			</if>
+		</set>
+		where transition_id=#{transitionId,jdbcType=DECIMAL}
+	</update>
 </mapper>

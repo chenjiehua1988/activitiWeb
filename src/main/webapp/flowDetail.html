@@ -26,6 +26,9 @@
 
 <div id="main">
 	<div>
+		<el-button type="primary" size="small" icon="arrow-left" @click="back">返回</el-button>
+	</div>
+	<div>
 		<el-tabs v-model="activeName" @tab-click="handleClick">
 			<el-tab-pane label="流程环节" name="first">
 				<div>
@@ -62,7 +65,13 @@
 
 							<el-table-column inline-template label="操作">
 								<div>
-
+									<el-tooltip class="item" effect="dark" content="修改环节规格、环节类型" placement="right">
+										<el-button
+												size="mini"
+												type="success"
+												@click="handleEditTache(row)">修改
+										</el-button>
+									</el-tooltip>
 								</div>
 							</el-table-column>
 						</el-table>
@@ -108,12 +117,50 @@
 	</div>
 
 
+	<el-dialog title="修改流程环节" :visible.sync="dialogTacheVisible">
+		<el-form :model="tacheDetail"  ref="ruleForm">
+			<el-form-item label="环节Id" prop="tacheId" >
+				<el-input v-model="tacheDetail.tacheId" auto-complete="off" :disabled="true"></el-input>
+			</el-form-item>
+			<el-form-item label="环节名称" prop="tacheName">
+				<el-input v-model="tacheDetail.tacheName" auto-complete="off" :disabled="true"></el-input>
+			</el-form-item>
+			<el-form-item label="流程环节名称" prop="activityName">
+				<el-input v-model="tacheDetail.activityName" auto-complete="off" :disabled="true"></el-input>
+			</el-form-item>
+			<el-form-item  label='环节规格' prop='tacheSpecCd'>
+				<el-select  v-model="tacheDetail.tacheSpecCd" placeholder="请选择">
+					<el-option v-for="item in tacheSpecCds"
+							   :label="item.attrValueName"
+							   :key="item.attrValue"
+							   :value="item.attrValue">
+					</el-option>
+				</el-select>
+			</el-form-item>
+			<el-form-item  label='环节类型' prop='tacheTypeCd'>
+				<el-select  v-model="tacheDetail.tacheTypeCd" placeholder="请选择">
+					<el-option v-for="item in tacheTypeCds"
+							   :label="item.attrValueName"
+							   :key="item.attrValue"
+							   :value="item.attrValue">
+					</el-option>
+				</el-select>
+			</el-form-item>
+		</el-form>
+		<div slot="footer" class="dialog-footer">
+			<el-button @click="dialogTacheVisible = false">取 消</el-button>
+			<el-button type="primary" @click="updateTacheDetail">确 定</el-button>
+		</div>
+	</el-dialog>
+
 </div>
 
 
 <style>
 
-
+	.el-select{
+		width: 100%;
+	}
 </style>
 
 
@@ -137,7 +184,20 @@
 			//环节列表
             tacheDetails: [],
 			//流程定义列表
-            transitionDetails: []
+            transitionDetails: [],
+			//显示修改流程环节对话框
+            dialogTacheVisible: false,
+			//需要修改的环节
+            tacheDetail: {tacheId: '', tacheName:'', activityName:'', tacheSpecCd:'', tacheTypeCd:''},
+            tacheSpecCds: [{attrValueName: '普通环节', attrValue: '1'},{attrValueName: '发布管理环节', attrValue: '6'}],
+            tacheTypeCds:
+				[
+                {attrValueName: '普通环节', attrValue: '1'},
+				{attrValueName: '第二个环节', attrValue: '-2'},
+				{attrValueName: '自动环节', attrValue: '-7'},
+				{attrValueName: '开始环节', attrValue: 'START_EVENT'},
+				{attrValueName: '结束环节', attrValue: 'END_EVENT'}
+				]
         },
     	methods:{
 
@@ -228,6 +288,27 @@
 				}
                 return '逆向';
             },
+
+            handleEditTache: function (row) {
+
+                this.tacheDetail.tacheId= row.tacheId;
+                this.tacheDetail.tacheName= row.tacheName;
+                this.tacheDetail.activityName= row.activityName;
+                this.tacheDetail.tacheSpecCd= row.tacheSpecCd;
+                this.tacheDetail.tacheTypeCd= row.tacheTypeCd;
+
+                this.dialogTacheVisible= true;
+            },
+
+			updateTacheDetail: function()
+			{
+                this.dialogTacheVisible = false;
+			},
+
+			back: function () {
+
+                window.location.href="main.html?activeName=third";
+            }
     	},
 		computed: {
 

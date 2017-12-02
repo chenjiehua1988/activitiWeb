@@ -207,11 +207,19 @@ public class ModuleController {
 			int index= 1;
 			StartEvent startEvent= null;
 
-			//1、保存flow_detail
+			//1、先查询是否已经有数据flow_detail
 			Map flowDetail= new HashMap();
 			flowDetail.put("flowId", FORMAT2.format(now));
 			flowDetail.put("fPdKey", processDefinition.getKey());
 			flowDetail.put("name", processDefinition.getName());
+
+			flowDetailList= ppmFlowService.queryFlowDetail(flowDetail);
+			String flowId= null;
+			if (flowDetailList!= null&&flowDetailList.size()> 0)
+			{
+				flowId= flowDetailList.get(0).get("flowId").toString();
+				flowDetail.put("flowId", flowId);
+			}
 
 			//2、保存所有的流程节点  tache_detail
 			Map<String, Map<String, Object>> tacheMap= new HashMap<String, Map<String, Object>>();
@@ -220,7 +228,7 @@ public class ModuleController {
 				String tacheId= FORMAT2.format(now)+ index;
 				Map tacheDetail= new HashMap();
 				tacheDetail.put("tacheId", tacheId);
-				tacheDetail.put("flowId", FORMAT2.format(now));
+				tacheDetail.put("flowId", flowId== null?FORMAT2.format(now):flowId);
 				tacheDetail.put("tacheName", flowElement.getName());
 				tacheDetail.put("activityName", flowElement.getId());
 				tacheDetail.put("tacheDesc", flowElement.getName());
@@ -303,7 +311,7 @@ public class ModuleController {
 						transitionDetail.put("transitionType", "0");
 						transitionDetail.put("fromTacheId", sourceRefId);
 						transitionDetail.put("toTacheId", targetRefId);
-						transitionDetail.put("flowId", FORMAT2.format(now));
+						transitionDetail.put("flowId", flowId== null?FORMAT2.format(now):flowId);
 						transitionDetail.put("transitionSeq", index);
 
 						transitionList.add(transitionDetail);
@@ -313,19 +321,18 @@ public class ModuleController {
 				}
 			}
 
-			//4、保存之前先删除表中老数据
-			flowDetailList= ppmFlowService.queryFlowDetail(flowDetail);
-			if (flowDetailList!= null&&flowDetailList.size()> 0)
+			//4、判断是新增还是更新数据
+			if (flowId!= null)
 			{
-				String flowId= flowDetailList.get(0).get("flowId").toString();
 
-				ppmFlowService.removePPMDataByFlowId(Long.valueOf(flowId));
+				ppmFlowService.removePPMDataByFlowId(flowDetail);
+			}
+			else
+			{
+				ppmFlowService.saveFlowDetail(flowDetail);
 			}
 
-
-			//5、保存业务数据到数据库 flow_detail,tache_detail,transition_detail
-			ppmFlowService.saveFlowDetail(flowDetail);
-
+			//5、保存业务数据到数据库 tache_detail,transition_detail
 			List<Map> list= new ArrayList<Map>();
 			for (String key: tacheMap.keySet()) {
 				Map tacheDetail= tacheMap.get(key);
