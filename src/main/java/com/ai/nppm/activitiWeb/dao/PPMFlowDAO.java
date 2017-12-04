@@ -25,5 +25,6 @@ public interface PPMFlowDAO {
     List<Map> queryTransitionDetails(Map map);
     void updateTacheDetail(Map map);
     void updateTransitionDetail(Map map);
+    Long getFlowDetailSeq();
 
 }

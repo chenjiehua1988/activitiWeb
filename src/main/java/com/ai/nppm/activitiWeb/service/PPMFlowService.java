@@ -72,4 +72,10 @@ public interface PPMFlowService {
      * @param map
      */
     void updateTransitionDetail(Map map);
+
+    /**
+     * 获取flow_detail序列
+     * @return
+     */
+    Long getFlowDetailSeq();
 }

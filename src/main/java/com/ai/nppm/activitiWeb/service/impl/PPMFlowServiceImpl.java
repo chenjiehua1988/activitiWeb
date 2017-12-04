@@ -85,4 +85,10 @@ public class PPMFlowServiceImpl implements PPMFlowService {
 
         ppmFlow.updateTransitionDetail(map);
     }
+
+    @Override
+    public Long getFlowDetailSeq() {
+
+        return ppmFlow.getFlowDetailSeq();
+    }
 }

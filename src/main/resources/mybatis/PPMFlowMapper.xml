@@ -156,4 +156,8 @@
 		</set>
 		where transition_id=#{transitionId,jdbcType=DECIMAL}
 	</update>
+
+	<select id="getFlowDetailSeq" resultType="java.lang.Long">
+		select seq_flow_detail.nextval from dual
+	</select>
 </mapper>

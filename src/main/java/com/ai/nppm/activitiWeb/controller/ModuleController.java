@@ -203,13 +203,13 @@ public class ModuleController {
 
 
 			//定义一些变量
-			Date now= new Date();
+			String flowDetailSeq= ppmFlowService.getFlowDetailSeq()+ "";
 			int index= 1;
 			StartEvent startEvent= null;
 
 			//1、先查询是否已经有数据flow_detail
 			Map flowDetail= new HashMap();
-			flowDetail.put("flowId", FORMAT2.format(now));
+			flowDetail.put("flowId", flowDetailSeq);
 			flowDetail.put("fPdKey", processDefinition.getKey());
 			flowDetail.put("name", processDefinition.getName());
 
@@ -225,10 +225,10 @@ public class ModuleController {
 			Map<String, Map<String, Object>> tacheMap= new HashMap<String, Map<String, Object>>();
 			for (FlowElement flowElement: collectionTache) {
 
-				String tacheId= FORMAT2.format(now)+ index;
+				String tacheId= flowDetailSeq+ index;
 				Map tacheDetail= new HashMap();
 				tacheDetail.put("tacheId", tacheId);
-				tacheDetail.put("flowId", flowId== null?FORMAT2.format(now):flowId);
+				tacheDetail.put("flowId", flowId== null?flowDetailSeq:flowId);
 				tacheDetail.put("tacheName", flowElement.getName());
 				tacheDetail.put("activityName", flowElement.getId());
 				tacheDetail.put("tacheDesc", flowElement.getName());
@@ -299,7 +299,7 @@ public class ModuleController {
 					for (int i = 0; i < actualTargetTacheList.size(); i++) {
 						Map<String, Object> stringObjectMap = actualTargetTacheList.get(i);
 
-						String transitionId= FORMAT2.format(now)+ index;
+						String transitionId= flowDetailSeq+ index;
 						String transName= sourceRefName+ "->"+ stringObjectMap.get("targetRefName").toString();
 						String targetRefId= stringObjectMap.get("targetRefId").toString();
 
@@ -311,7 +311,7 @@ public class ModuleController {
 						transitionDetail.put("transitionType", "0");
 						transitionDetail.put("fromTacheId", sourceRefId);
 						transitionDetail.put("toTacheId", targetRefId);
-						transitionDetail.put("flowId", flowId== null?FORMAT2.format(now):flowId);
+						transitionDetail.put("flowId", flowId== null?flowDetailSeq:flowId);
 						transitionDetail.put("transitionSeq", index);
 
 						transitionList.add(transitionDetail);
