@@ -101,13 +101,13 @@
 			<el-tab-pane label="已部署流程定义" name="second">
 
 				<div style="width: 15%">
-					<el-input
-							placeholder="请输入流程key"
-							icon="search"
-							v-model="flowKey"
-							:on-icon-click="queryFlowByKey"
-							>
-					</el-input>
+					<el-select  v-model="flowKey" placeholder="请选择流程" clearable  style="width: 100%">
+						<el-option v-for="item in flowKeys"
+								   :label="item.name"
+								   :key="item.key"
+								   :value="item.key">
+						</el-option>
+					</el-select>
 				</div>
 				<div>
 					<el-table
@@ -175,7 +175,7 @@
 				</div>
 
 			</el-tab-pane>
-			<el-tab-pane label="PPM流程模型" name="third">
+			<el-tab-pane label="业务模型定义" name="third">
 
 				<div>
 					<el-table
@@ -337,7 +337,9 @@
             loadingFlowTable: false,
             loadingFlowTableText: '流程转换模型中...',
 			//flow_detail表数据
-            flowDetails: []
+            flowDetails: [],
+			//流程列表
+            flowKeys: []
         },
     	methods:{
 
@@ -403,6 +405,7 @@
 					if (response.status== 200)
 					{
                         vueThis.flowDetails= response.data.data;
+                        vueThis.flowKeys= response.data.data;
                     }
 
                 }).catch(function (error) {
@@ -732,6 +735,12 @@
     	},
 		computed: {
 
+		},
+		watch:{
+            'flowKey':function(newVal,oldVal){
+
+                this.queryFlowByKey(newVal);
+            }
 		}
     });
 </script>
