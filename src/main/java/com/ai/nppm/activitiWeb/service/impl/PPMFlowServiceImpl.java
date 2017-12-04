@@ -2,6 +2,7 @@ package com.ai.nppm.activitiWeb.service.impl;
 
 import com.ai.nppm.activitiWeb.dao.PPMFlowDAO;
 import com.ai.nppm.activitiWeb.service.PPMFlowService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -91,4 +92,10 @@ public class PPMFlowServiceImpl implements PPMFlowService {
 
         return ppmFlow.getFlowDetailSeq();
     }
+
+    @Override
+    public List<Map> queryFlowKeys(Map map) {
+        return ppmFlow.queryFlowKeys(map);
+    }
+
 }

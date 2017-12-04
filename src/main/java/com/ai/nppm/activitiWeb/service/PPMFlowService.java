@@ -42,6 +42,13 @@ public interface PPMFlowService {
     List<Map> queryFlowDetail(Map map);
 
     /**
+     * 查询所有的流程 去重
+     * @param map
+     * @return
+     */
+    List<Map> queryFlowKeys(Map map);
+
+    /**
      * 查询tache_detail
      * @param map
      * @return
@@ -57,7 +64,7 @@ public interface PPMFlowService {
 
     /**
      * 删除ppm模型数据
-     * @param flowId
+     * @param map
      */
     void removePPMDataByFlowId(Map map);
 

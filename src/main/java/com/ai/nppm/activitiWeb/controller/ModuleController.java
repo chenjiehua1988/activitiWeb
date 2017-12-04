@@ -225,7 +225,7 @@ public class ModuleController {
 			Map<String, Map<String, Object>> tacheMap= new HashMap<String, Map<String, Object>>();
 			for (FlowElement flowElement: collectionTache) {
 
-				String tacheId= flowDetailSeq+ index;
+				String tacheId= flowDetailSeq+ StringUtils.leftPad(""+index, 2, "0");
 				Map tacheDetail= new HashMap();
 				tacheDetail.put("tacheId", tacheId);
 				tacheDetail.put("flowId", flowId== null?flowDetailSeq:flowId);
@@ -299,7 +299,7 @@ public class ModuleController {
 					for (int i = 0; i < actualTargetTacheList.size(); i++) {
 						Map<String, Object> stringObjectMap = actualTargetTacheList.get(i);
 
-						String transitionId= flowDetailSeq+ index;
+						String transitionId= flowDetailSeq+ StringUtils.leftPad(""+index, 2, "0");
 						String transName= sourceRefName+ "->"+ stringObjectMap.get("targetRefName").toString();
 						String targetRefId= stringObjectMap.get("targetRefId").toString();
 

@@ -247,6 +247,43 @@ public class FlowController {
 		return res;
 	}
 
+	@RequestMapping(value = "queryFlowKeys")
+	@ResponseBody
+	public String queryFlowKeys(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			List<Map> mapList= ppmFlow.queryFlowKeys(new HashMap());
+
+
+			JSONArray jsonArray= new JSONArray();
+			if (mapList!= null)
+			{
+				JSONObject jsonObject= null;
+				for (int i = 0; i < mapList.size(); i++) {
+					Map tacheDetail = mapList.get(i);
+
+					jsonObject= new JSONObject();
+					jsonObject.put("name", tacheDetail.get("name"));
+					jsonObject.put("key", tacheDetail.get("key"));
+
+					jsonArray.add(jsonObject);
+				}
+			}
+
+			JSONObject jsonObject= new JSONObject();
+			jsonObject.put("total", mapList.size());
+			jsonObject.put("data", jsonArray);
+			res= jsonObject.toString();
+
+		} catch (Exception e) {
+			logger.error("查询流程列表异常：", e);
+		}
+
+		return res;
+	}
+
 	@RequestMapping(value = "queryTacheDetails")
 	@ResponseBody
 	public String queryTacheDetails(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {

@@ -100,6 +100,12 @@
 		order by t.flow_id asc
 	</select>
 
+	<select id="queryFlowKeys" parameterType="java.util.Map" resultType="java.util.Map">
+		select distinct t.key_ as "key", t.name_ as "name"
+		  from act_re_procdef t
+		 order by t.key_
+	</select>
+
 	<select id="queryTacheDetails" parameterType="java.util.Map" resultType="java.util.Map">
 		select
 			t.tache_id      as "tacheId",

@@ -405,6 +405,23 @@
 					if (response.status== 200)
 					{
                         vueThis.flowDetails= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+            queryFlowKeys: function () {
+
+                var vueThis= this;
+                axios.post('flow/queryFlowKeys',{
+
+                }).then(function (response) {
+
+					if (response.status== 200)
+					{
                         vueThis.flowKeys= response.data.data;
                     }
 
@@ -424,6 +441,7 @@
 			    this.queryModels();
 			    this.queryFlows();
                 this.queryFlowDetails();
+                this.queryFlowKeys();
             },
 
             onSubmit: function () {
