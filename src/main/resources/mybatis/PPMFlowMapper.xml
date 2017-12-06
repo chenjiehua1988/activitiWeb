@@ -136,6 +136,8 @@
 		DELETE from tache_detail where flow_id= #{flowId,jdbcType=DECIMAL};
 		DELETE from transition_detail where flow_id= #{flowId,jdbcType=DECIMAL};
 		UPDATE flow_template set flow_template_name=#{name,jdbcType=VARCHAR},description=#{name,jdbcType=VARCHAR} where flow_id= #{flowId,jdbcType=DECIMAL};
+		delete from flow_operator t
+ 		where t.tache_id in (select d.tache_id from tache_detail d where d.flow_id = #{flowId,jdbcType=DECIMAL});
 		END ;
 	</delete>
 	

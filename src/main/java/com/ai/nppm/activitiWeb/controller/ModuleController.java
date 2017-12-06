@@ -203,13 +203,12 @@ public class ModuleController {
 
 
 			//定义一些变量
-			String flowDetailSeq= ppmFlowService.getFlowDetailSeq()+ "";
+			String flowDetailSeq= null;
 			int index= 1;
 			StartEvent startEvent= null;
 
 			//1、先查询是否已经有数据flow_detail
 			Map flowDetail= new HashMap();
-			flowDetail.put("flowId", flowDetailSeq);
 			flowDetail.put("fPdKey", processDefinition.getKey());
 			flowDetail.put("name", processDefinition.getName());
 
@@ -218,8 +217,13 @@ public class ModuleController {
 			if (flowDetailList!= null&&flowDetailList.size()> 0)
 			{
 				flowId= flowDetailList.get(0).get("flowId").toString();
-				flowDetail.put("flowId", flowId);
+				flowDetailSeq= flowId;
 			}
+			else
+			{
+				flowDetailSeq= ppmFlowService.getFlowDetailSeq()+ "";
+			}
+			flowDetail.put("flowId", flowDetailSeq);
 
 			//2、保存所有的流程节点  tache_detail
 			Map<String, Map<String, Object>> tacheMap= new HashMap<String, Map<String, Object>>();
