@@ -1,19 +1,16 @@
 package com.ai.nppm.activitiWeb.controller;
 
-import com.ai.nppm.activitiWeb.dao.PPMFlowDAO;
+import com.ai.nppm.activitiWeb.service.PPMFlowService;
 import com.alibaba.fastjson.JSON;
-import com.vaadin.terminal.ExternalResource;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
-import org.activiti.editor.ui.ConvertProcessDefinitionPopupWindow;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.explorer.ExplorerApp;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -31,7 +28,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,10 +39,9 @@ import java.util.Map;
 public class FlowController {
 	
 	private Logger logger = LoggerFactory.getLogger(FlowController.class);
-	private static final SimpleDateFormat FORMAT= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	@Autowired
-	private PPMFlowDAO ppmFlow;
+	private PPMFlowService ppmFlow;
 
 	@Autowired
 	private RepositoryService repositoryService;
@@ -216,28 +211,40 @@ public class FlowController {
 		String res= "success";
 		try {
 
-			List<Map> mapList= ppmFlow.queryFlowDetail(new HashMap());
+			Long total=0L;
+			List<Map> count= ppmFlow.queryFlowDetailCount(new HashMap());
+			if (count!= null&&count.size()==1)
+			{
+				total= Long.valueOf(count.get(0).get("total").toString());
+			}
+			List<Map> mapList= ppmFlow.queryFlowDetail(map);
 
 
 			JSONArray jsonArray= new JSONArray();
 			if (mapList!= null)
 			{
 				JSONObject jsonObject= null;
+				Map para= new HashMap();
 				for (int i = 0; i < mapList.size(); i++) {
-					Map tacheDetail = mapList.get(i);
+					Map flowDetail = mapList.get(i);
 
 					jsonObject= new JSONObject();
-					jsonObject.put("id", tacheDetail.get("flowId"));
-					jsonObject.put("name", tacheDetail.get("name"));
-					jsonObject.put("key", tacheDetail.get("key"));
-					jsonObject.put("version", tacheDetail.get("version"));
+					jsonObject.put("id", flowDetail.get("flowId"));
+					jsonObject.put("name", flowDetail.get("name"));
+					jsonObject.put("key", flowDetail.get("key"));
+					jsonObject.put("version", flowDetail.get("version"));
+
+					//查询ppm流程是否已经有流程实例
+					para.put("flowId", flowDetail.get("flowId"));
+					long flowInstCount= Long.valueOf(ppmFlow.queryFlowInstCount(para).get(0).get("total").toString());
+					jsonObject.put("hasFlowInst", flowInstCount== 0?false: true);
 
 					jsonArray.add(jsonObject);
 				}
 			}
 
 			JSONObject jsonObject= new JSONObject();
-			jsonObject.put("total", mapList.size());
+			jsonObject.put("total", total);
 			jsonObject.put("data", jsonArray);
 			res= jsonObject.toString();
 
@@ -548,6 +555,23 @@ public class FlowController {
 
 		} catch (Exception e) {
 			logger.error("更新flow_operator异常：", e);
+			res= "error";
+		}
+
+		return res;
+	}
+
+	@RequestMapping(value = "removePPMDataByFlowId")
+	@ResponseBody
+	public String removePPMDataByFlowId(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			ppmFlow.removePPMDataByFlowId(map);
+
+		} catch (Exception e) {
+			logger.error("删除ppm业务流程数据异常：", e);
 			res= "error";
 		}
 

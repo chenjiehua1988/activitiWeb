@@ -21,6 +21,8 @@ public interface PPMFlowDAO {
     void saveTransitionDetail(Map map);
     void removePPMDataByFlowId(Map map);
     List<Map> queryFlowDetail(Map map);
+    List<Map> queryFlowDetailCount(Map map);
+    List<Map> queryFlowInstCount(Map map);
     List<Map> queryFlowKeys(Map map);
     List<Map> queryTacheDetails(Map map);
     List<Map> queryTransitionDetails(Map map);

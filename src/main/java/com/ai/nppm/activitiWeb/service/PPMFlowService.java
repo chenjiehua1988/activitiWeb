@@ -40,6 +40,8 @@ public interface PPMFlowService {
      * @return
      */
     List<Map> queryFlowDetail(Map map);
+    List<Map> queryFlowDetailCount(Map map);
+    List<Map> queryFlowInstCount(Map map);
 
     /**
      * 查询所有的流程 去重

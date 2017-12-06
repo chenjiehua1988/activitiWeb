@@ -132,4 +132,14 @@ public class PPMFlowServiceImpl implements PPMFlowService {
     public void updateFlowOperator(Map map) {
         ppmFlow.updateFlowOperator(map);
     }
+
+    @Override
+    public List<Map> queryFlowDetailCount(Map map) {
+        return ppmFlow.queryFlowDetailCount(map);
+    }
+
+    @Override
+    public List<Map> queryFlowInstCount(Map map) {
+        return ppmFlow.queryFlowInstCount(map);
+    }
 }

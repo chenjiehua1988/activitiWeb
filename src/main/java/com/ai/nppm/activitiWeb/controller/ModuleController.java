@@ -37,7 +37,6 @@ public class ModuleController {
 	
 	private Logger logger = LoggerFactory.getLogger(ModuleController.class);
 	private static final SimpleDateFormat FORMAT= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private static final SimpleDateFormat FORMAT2= new SimpleDateFormat("MMddHHmmss");
 
 	@Autowired
 	private PPMFlowService ppmFlowService;
@@ -211,6 +210,8 @@ public class ModuleController {
 			Map flowDetail= new HashMap();
 			flowDetail.put("fPdKey", processDefinition.getKey());
 			flowDetail.put("name", processDefinition.getName());
+			flowDetail.put("start", 1);
+			flowDetail.put("end", 100);
 
 			flowDetailList= ppmFlowService.queryFlowDetail(flowDetail);
 			String flowId= null;

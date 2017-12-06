@@ -26,7 +26,7 @@
 
 <div id="main">
 	<div>
-		<el-tabs v-model="activeName" @tab-click="handleClick">
+		<el-tabs v-model="activeName">
 			<el-tab-pane label="流程设计工作区" name="first">
 				<div>
 					<div>
@@ -212,9 +212,25 @@
 										size="mini"
 										@click="handleEditFlowDetail(row)">编辑
 								</el-button>
+								<el-tooltip class="item" effect="dark" content="删除流程业务模型数据，已经实例化的不能删除" placement="right">
+									<el-button
+											size="mini"
+											type="danger"
+											@click="handleDeletePPMFlow(row)"
+											:disabled="row.hasFlowInst">删除
+									</el-button>
+								</el-tooltip>
+
 							</div>
 						</el-table-column>
 					</el-table>
+					<el-pagination style='float:right'
+								   layout="total, prev, pager, next"
+								   :current-page="form3.index"
+								   :page-size="form3.size"
+								   :total="form3.total"
+								   @current-change="_handlePageFlowDetail">
+					</el-pagination>
 				</div>
 
 			</el-tab-pane>
@@ -264,6 +280,18 @@
 			<el-button type="primary" @click="handleCloseFlow">确 定</el-button>
   		</span>
 	</el-dialog>
+
+	<el-dialog
+			title="提示"
+			:visible.sync="dialogFlowDetailVisible"
+			size="tiny"
+			>
+		<span>您确定要删除流程业务模型数据吗？这个操作不可恢复</span>
+		<span slot="footer" class="dialog-footer">
+			<el-button @click="dialogFlowDetailVisible = false">取 消</el-button>
+			<el-button type="primary" @click="handleCloseFlowDetail">确 定</el-button>
+  		</span>
+	</el-dialog>
 </div>
 
 
@@ -295,6 +323,12 @@
             },
 			//流程定义列表分页参数
 			form2: {
+                page: 1,
+                size: 10,
+				total: 0
+            },
+			//业务流程定义列表分页参数
+			form3: {
                 page: 1,
                 size: 10,
 				total: 0
@@ -339,12 +373,12 @@
 			//flow_detail表数据
             flowDetails: [],
 			//流程列表
-            flowKeys: []
+            flowKeys: [],
+			//ppm  flow_detail  flow_id
+			ppmFlowId: '',
+            dialogFlowDetailVisible: false
         },
     	methods:{
-
-            handleClick: function(tab, event) {
-            },
 
 			//查询所有模型
 			queryModels: function () {
@@ -395,15 +429,23 @@
             },
 
 			//查询所有ppm流程定义
-            queryFlowDetails: function () {
+            queryFlowDetails: function (page) {
+
+                if (page)
+                {
+                    this.form3.page= page;
+                }
 
                 var vueThis= this;
+                var start= (this.form3.page- 1)* this.form3.size+ 1;
                 axios.post('flow/queryFlowDetails',{
-
+                    start: start,
+                    end: this.form3.size+ start- 1
                 }).then(function (response) {
 
 					if (response.status== 200)
 					{
+                        vueThis.form3.total= response.data.total;
                         vueThis.flowDetails= response.data.data;
                     }
 
@@ -440,7 +482,6 @@
 
 			    this.queryModels();
 			    this.queryFlows();
-                this.queryFlowDetails();
                 this.queryFlowKeys();
             },
 
@@ -479,7 +520,7 @@
                             vueThis.loadingModelTableText= '转换工作流引擎模型数据-->PPM业务模型数据';
                             //转换工作流引擎模型数据到ppm业务模型数据
                             axios.post('model/transferToPPMModel',{
-                                processId: processId
+                                processId: processId,
                             }).then(function (response) {
 
                                 setTimeout(function () {
@@ -619,13 +660,16 @@
             },
 
             _handlePageFlow: function (val) {
-                console.log(val);
                 this.form2.page= val;
 
                 this.queryFlows();
             },
+			_handlePageFlowDetail: function (val) {
+                this.form3.page= val;
+
+                this.queryFlowDetails();
+            },
 			_handlePageModel: function (val) {
-                console.log(val);
                 this.form.page= val;
 
                 this.queryModels();
@@ -691,6 +735,37 @@
                 }
             },
 
+            removePPMDataByFlowId: function () {
+
+                var vueThis= this;
+				axios.post('flow/removePPMDataByFlowId',{
+					flowId: this.ppmFlowId,
+					state: '0'
+				}).then(function (response) {
+
+					if (response.status== 200&&response.data=='success')
+					{
+						vueThis.$message({
+							message: '流程业务模型数据删除成功',
+							type: 'success'
+						});
+
+						vueThis.queryFlowDetails();
+					}
+					else
+					{
+						vueThis.$message({
+							message: '流程业务模型数据删除异常',
+							type: 'error'
+						});
+					}
+
+				}).catch(function (error) {
+					console.log('[ppm err]');
+					console.log(error);
+				});
+            },
+
             handleFlowToModel: function (row) {
 
                 this.loadingFlowTable= true;
@@ -749,6 +824,19 @@
                 var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
                     results = regex.exec(location.search);
                 return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+            },
+
+            handleDeletePPMFlow: function (row) {
+
+			    this.ppmFlowId= row.id;
+
+			    this.dialogFlowDetailVisible= true;
+            },
+
+            handleCloseFlowDetail: function () {
+
+			    this.removePPMDataByFlowId();
+                this.dialogFlowDetailVisible= false;
             }
     	},
 		computed: {
@@ -758,7 +846,16 @@
             'flowKey':function(newVal,oldVal){
 
                 this.queryFlowByKey(newVal);
+            },
+
+			'activeName':function(newVal,oldVal){
+
+                if (newVal== 'third')
+                {
+                    this.queryFlowDetails();
+                }
             }
+
 		}
     });
 </script>
