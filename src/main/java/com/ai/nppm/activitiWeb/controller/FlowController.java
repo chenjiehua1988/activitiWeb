@@ -1,6 +1,7 @@
 package com.ai.nppm.activitiWeb.controller;
 
 import com.ai.nppm.activitiWeb.dao.PPMFlowDAO;
+import com.alibaba.fastjson.JSON;
 import com.vaadin.terminal.ExternalResource;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -396,4 +397,161 @@ public class FlowController {
 
 		return res;
 	}
+
+
+	@RequestMapping(value = "queryRoles")
+	@ResponseBody
+	public String queryRoles(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			List<Map> mapList= ppmFlow.queryRoles(new HashMap());
+
+
+			JSONArray jsonArray= new JSONArray();
+			if (mapList!= null)
+			{
+				JSONObject jsonObject= null;
+				for (int i = 0; i < mapList.size(); i++) {
+					Map role = mapList.get(i);
+
+					jsonObject= new JSONObject();
+					jsonObject.put("roleId", role.get("roleId"));
+					jsonObject.put("roleName", role.get("roleName"));
+
+					jsonArray.add(jsonObject);
+				}
+			}
+
+			JSONObject jsonObject= new JSONObject();
+			jsonObject.put("total", mapList.size());
+			jsonObject.put("data", jsonArray);
+			res= jsonObject.toString();
+
+		} catch (Exception e) {
+			logger.error("查询角色列表异常：", e);
+		}
+
+		return res;
+	}
+
+	@RequestMapping(value = "queryStaffsByTacheId")
+	@ResponseBody
+	public String queryStaffsByTacheId(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			List<Map> mapList= ppmFlow.queryStaffsByTacheId(map);
+
+
+			JSONArray jsonArray= new JSONArray();
+			if (mapList!= null)
+			{
+				JSONObject jsonObject= null;
+				for (int i = 0; i < mapList.size(); i++) {
+					Map staff = mapList.get(i);
+
+					jsonObject= new JSONObject();
+					jsonObject.put("staffName", staff.get("staffName"));
+					jsonObject.put("staffId", staff.get("staffId"));
+					jsonObject.put("id", staff.get("id"));
+					jsonObject.put("isDefault", staff.get("isDefault"));
+
+					jsonArray.add(jsonObject);
+				}
+			}
+
+			JSONObject jsonObject= new JSONObject();
+			jsonObject.put("total", mapList.size());
+			jsonObject.put("data", jsonArray);
+			res= jsonObject.toString();
+
+		} catch (Exception e) {
+			logger.error("查询员工列表异常：", e);
+		}
+
+		return res;
+	}
+
+	@RequestMapping(value = "queryStaffsByRoleId")
+	@ResponseBody
+	public String queryStaffsByRoleId(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			List<Map> mapList= ppmFlow.queryStaffsByRoleId(map);
+
+
+			com.alibaba.fastjson.JSONArray jsonArray= new com.alibaba.fastjson.JSONArray();
+			if (mapList!= null)
+			{
+				jsonArray= JSON.parseArray(JSON.toJSONString(mapList));
+			}
+
+			com.alibaba.fastjson.JSONObject jsonObject= new com.alibaba.fastjson.JSONObject();
+			jsonObject.put("total", mapList.size());
+			jsonObject.put("data", jsonArray);
+			res= jsonObject.toString();
+
+		} catch (Exception e) {
+			logger.error("查询员工列表异常：", e);
+		}
+
+		return res;
+	}
+
+	@RequestMapping(value = "saveFlowOperator")
+	@ResponseBody
+	public String saveFlowOperator(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			ppmFlow.saveFlowOperator(map);
+
+		} catch (Exception e) {
+			logger.error("保存flow_operator异常：", e);
+			res= "error";
+		}
+
+		return res;
+	}
+
+	@RequestMapping(value = "removeFlowOperator")
+	@ResponseBody
+	public String removeFlowOperator(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			ppmFlow.removeFlowOperator(map);
+
+		} catch (Exception e) {
+			logger.error("删除flow_operator异常：", e);
+			res= "error";
+		}
+
+		return res;
+	}
+
+	@RequestMapping(value = "updateFlowOperator")
+	@ResponseBody
+	public String updateFlowOperator(HttpServletRequest request, HttpServletResponse response, @RequestBody Map map) {
+
+		String res= "success";
+		try {
+
+			ppmFlow.updateFlowOperator(map);
+
+		} catch (Exception e) {
+			logger.error("更新flow_operator异常：", e);
+			res= "error";
+		}
+
+		return res;
+	}
+
 }

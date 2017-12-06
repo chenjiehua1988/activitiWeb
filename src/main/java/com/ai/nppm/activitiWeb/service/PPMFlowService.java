@@ -85,4 +85,44 @@ public interface PPMFlowService {
      * @return
      */
     Long getFlowDetailSeq();
+
+    /**
+     * 查询角色列表
+     * @param map
+     * @return
+     */
+    List<Map> queryRoles(Map map);
+
+    /**
+     * 查询某一个环节的审批人列表
+     * @param map
+     * @return
+     */
+    List<Map> queryStaffsByTacheId(Map map);
+
+    /**
+     * 查询角色下的员工
+     * @param map
+     * @return
+     */
+    List<Map> queryStaffsByRoleId(Map map);
+
+    /**
+     * 新增环节审批人
+     * @param map
+     */
+    void saveFlowOperator(Map map);
+
+    /**
+     * 删除环节审批人
+     * @param map
+     */
+    void removeFlowOperator(Map map);
+
+    /**
+     * 更新环节审批人
+     * @param map
+     */
+    void updateFlowOperator(Map map);
+
 }

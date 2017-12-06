@@ -27,5 +27,11 @@ public interface PPMFlowDAO {
     void updateTacheDetail(Map map);
     void updateTransitionDetail(Map map);
     Long getFlowDetailSeq();
+    List<Map> queryRoles(Map map);
+    List<Map> queryStaffsByTacheId(Map map);
+    List<Map> queryStaffsByRoleId(Map map);
+    void saveFlowOperator(Map map);
+    void removeFlowOperator(Map map);
+    void updateFlowOperator(Map map);
 
 }

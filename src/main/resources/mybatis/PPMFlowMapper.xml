@@ -166,4 +166,48 @@
 	<select id="getFlowDetailSeq" resultType="java.lang.Long">
 		select seq_flow_detail.nextval from dual
 	</select>
+
+	<select id="queryRoles" parameterType="java.util.Map" resultType="java.util.Map">
+		select t.role_id as "roleId", t.role_name as "roleName"
+		  from roles t where t.status_cd='1000'
+		 order by t.role_id
+	</select>
+
+	<select id="queryStaffsByRoleId" parameterType="java.util.Map" resultType="java.util.Map">
+		select i.name as "staffName", i.staff_id as "staffId"
+		  from staff_role re, roles r, staff_info i
+		 where re.status_cd = '1000'
+		   and r.status_cd = '1000'
+		   and i.status_cd = '1000'
+		   and re.role_id=r.role_id and re.staff_id=i.staff_id
+		   AND r.role_id=#{roleId,jdbcType=DECIMAL}
+	</select>
+
+	<select id="queryStaffsByTacheId" parameterType="java.util.Map" resultType="java.util.Map">
+		select i.name as "staffName", i.staff_id as "staffId", t.flow_operator as "id", is_default as "isDefault"
+		  from flow_operator t, staff_info i
+		 where i.status_cd='1000' and t.operator_id = i.staff_id AND t.tache_id=#{tacheId,jdbcType=DECIMAL}
+	</select>
+
+	<insert id="saveFlowOperator" parameterType="java.util.Map">
+		insert into flow_operator
+		(flow_operator,
+		tache_id,
+		operator_type,
+		operator_id,
+		connect_type,
+		is_default,
+		deal_type)
+		values
+		(SEQ_FLOW_OPERATOR.Nextval, #{tacheId,jdbcType=DECIMAL}, '1', #{staffId,jdbcType=DECIMAL}, '1', 0, 1)
+	</insert>
+
+	<delete id="removeFlowOperator" parameterType="java.util.Map">
+		delete from flow_operator where flow_operator=#{id,jdbcType=DECIMAL}
+	</delete>
+
+	<update id="updateFlowOperator" parameterType="java.util.Map">
+		update flow_operator set is_default=#{isDefault,jdbcType=DECIMAL} where flow_operator=#{id,jdbcType=DECIMAL}
+	</update>
+
 </mapper>

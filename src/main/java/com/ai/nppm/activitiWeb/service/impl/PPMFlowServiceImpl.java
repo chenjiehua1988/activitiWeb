@@ -98,4 +98,38 @@ public class PPMFlowServiceImpl implements PPMFlowService {
         return ppmFlow.queryFlowKeys(map);
     }
 
+    @Override
+    public List<Map> queryRoles(Map map) {
+
+        return ppmFlow.queryRoles(map);
+    }
+
+    @Override
+    public List<Map> queryStaffsByTacheId(Map map) {
+
+        return ppmFlow.queryStaffsByTacheId(map);
+    }
+
+    @Override
+    public List<Map> queryStaffsByRoleId(Map map) {
+
+        return ppmFlow.queryStaffsByRoleId(map);
+    }
+
+    @Override
+    public void saveFlowOperator(Map map) {
+
+        ppmFlow.saveFlowOperator(map);
+    }
+
+    @Override
+    public void removeFlowOperator(Map map) {
+
+        ppmFlow.removeFlowOperator(map);
+    }
+
+    @Override
+    public void updateFlowOperator(Map map) {
+        ppmFlow.updateFlowOperator(map);
+    }
 }
