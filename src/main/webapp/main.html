@@ -26,7 +26,7 @@
 
 <div id="main">
 	<div>
-		<el-tabs v-model="activeName" @tab-click="handleClick">
+		<el-tabs v-model="activeName">
 			<el-tab-pane label="流程设计工作区" name="first">
 				<div>
 					<div>
@@ -101,13 +101,13 @@
 			<el-tab-pane label="已部署流程定义" name="second">
 
 				<div style="width: 15%">
-					<el-input
-							placeholder="请输入流程key"
-							icon="search"
-							v-model="flowKey"
-							:on-icon-click="queryFlowByKey"
-							>
-					</el-input>
+					<el-select  v-model="flowKey" placeholder="请选择流程" clearable  style="width: 100%">
+						<el-option v-for="item in flowKeys"
+								   :label="item.name"
+								   :key="item.key"
+								   :value="item.key">
+						</el-option>
+					</el-select>
 				</div>
 				<div>
 					<el-table
@@ -175,6 +175,65 @@
 				</div>
 
 			</el-tab-pane>
+			<el-tab-pane label="业务模型定义" name="third">
+
+				<div>
+					<el-table
+							:data="flowDetails"
+							border
+							style="width: 100%"
+							>
+
+						<el-table-column
+								prop="id"
+								label="id"
+								width="180">
+						</el-table-column>
+						<el-table-column
+								prop="name"
+								label="名称"
+								width="300">
+						</el-table-column>
+						<el-table-column
+								prop="key"
+								label="key"
+								width="300">
+						</el-table-column>
+						<el-table-column
+								prop="version"
+								label="版本"
+								align="center">
+						</el-table-column>
+
+
+						<el-table-column inline-template label="操作" align="center">
+							<div>
+								<el-button
+										size="mini"
+										@click="handleEditFlowDetail(row)">编辑
+								</el-button>
+								<el-tooltip class="item" effect="dark" content="删除流程业务模型数据，已经实例化的不能删除" placement="right">
+									<el-button
+											size="mini"
+											type="danger"
+											@click="handleDeletePPMFlow(row)"
+											:disabled="row.hasFlowInst">删除
+									</el-button>
+								</el-tooltip>
+
+							</div>
+						</el-table-column>
+					</el-table>
+					<el-pagination style='float:right'
+								   layout="total, prev, pager, next"
+								   :current-page="form3.index"
+								   :page-size="form3.size"
+								   :total="form3.total"
+								   @current-change="_handlePageFlowDetail">
+					</el-pagination>
+				</div>
+
+			</el-tab-pane>
 		</el-tabs>
 
 	</div>
@@ -221,6 +280,18 @@
 			<el-button type="primary" @click="handleCloseFlow">确 定</el-button>
   		</span>
 	</el-dialog>
+
+	<el-dialog
+			title="提示"
+			:visible.sync="dialogFlowDetailVisible"
+			size="tiny"
+			>
+		<span>您确定要删除流程业务模型数据吗？这个操作不可恢复</span>
+		<span slot="footer" class="dialog-footer">
+			<el-button @click="dialogFlowDetailVisible = false">取 消</el-button>
+			<el-button type="primary" @click="handleCloseFlowDetail">确 定</el-button>
+  		</span>
+	</el-dialog>
 </div>
 
 
@@ -252,6 +323,12 @@
             },
 			//流程定义列表分页参数
 			form2: {
+                page: 1,
+                size: 10,
+				total: 0
+            },
+			//业务流程定义列表分页参数
+			form3: {
                 page: 1,
                 size: 10,
 				total: 0
@@ -292,12 +369,16 @@
             loadingModelTableText: '流程部署中...',
 			//流程列表遮罩
             loadingFlowTable: false,
-            loadingFlowTableText: '流程转换模型中...'
+            loadingFlowTableText: '流程转换模型中...',
+			//flow_detail表数据
+            flowDetails: [],
+			//流程列表
+            flowKeys: [],
+			//ppm  flow_detail  flow_id
+			ppmFlowId: '',
+            dialogFlowDetailVisible: false
         },
     	methods:{
-
-            handleClick: function(tab, event) {
-            },
 
 			//查询所有模型
 			queryModels: function () {
@@ -347,6 +428,51 @@
                 });
             },
 
+			//查询所有ppm流程定义
+            queryFlowDetails: function (page) {
+
+                if (page)
+                {
+                    this.form3.page= page;
+                }
+
+                var vueThis= this;
+                var start= (this.form3.page- 1)* this.form3.size+ 1;
+                axios.post('flow/queryFlowDetails',{
+                    start: start,
+                    end: this.form3.size+ start- 1
+                }).then(function (response) {
+
+					if (response.status== 200)
+					{
+                        vueThis.form3.total= response.data.total;
+                        vueThis.flowDetails= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+            queryFlowKeys: function () {
+
+                var vueThis= this;
+                axios.post('flow/queryFlowKeys',{
+
+                }).then(function (response) {
+
+					if (response.status== 200)
+					{
+                        vueThis.flowKeys= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
             queryFlowByKey: function (val) {
 
                 this.queryFlows(1);
@@ -356,6 +482,7 @@
 
 			    this.queryModels();
 			    this.queryFlows();
+                this.queryFlowKeys();
             },
 
             onSubmit: function () {
@@ -379,28 +506,64 @@
                     modelId: modelId
                 }).then(function (response) {
 
-                    setTimeout(function () {
+                    if (response.status== 200&&response.data.res=='success')
+                    {
+                        var processId= response.data.processId;
 
-                        if (response.status== 200&&response.data.res=='success')
-                        {
+                        vueThis.$message({
+                            message: '部署流程成功',
+                            type: 'success'
+                        });
 
-                            vueThis.$message({
-                                message: '部署流程成功',
-                                type: 'success'
+                        setTimeout(function () {
+
+                            vueThis.loadingModelTableText= '转换工作流引擎模型数据-->PPM业务模型数据';
+                            //转换工作流引擎模型数据到ppm业务模型数据
+                            axios.post('model/transferToPPMModel',{
+                                processId: processId,
+                            }).then(function (response) {
+
+                                setTimeout(function () {
+                                    if (response.status== 200&&response.data=='success')
+                                    {
+
+                                        vueThis.$message({
+                                            message: '转换工作流引擎模型数据到ppm业务模型数据成功',
+                                            type: 'success'
+                                        });
+
+                                        //自动刷新流程定义列表
+                                        vueThis.init();
+                                    }
+                                    else
+									{
+
+                                        vueThis.$message({
+                                            message: '转换工作流引擎模型数据到ppm业务模型数据异常',
+                                            type: 'error'
+                                        });
+									}
+
+                                    vueThis.loadingModelTable= false;
+                                    vueThis.loadingModelTableText= '流程部署中...';
+                                }, 3000);
+
+                            }).catch(function (error) {
+                                console.log('[ppm err]');
+                                console.log(error);
                             });
 
-                            vueThis.init();
-                        }
-                        else
-                        {
-
-                            vueThis.$message({
-                                message: '流程部署异常',
-                                type: 'error'
-                            });
-                        }
+                        }, 3000);
+                    }
+                    else
+					{
                         vueThis.loadingModelTable= false;
-                    }, 3000);
+
+                        vueThis.$message({
+                            message: '流程部署异常',
+                            type: 'error'
+                        });
+                    }
 
                 }).catch(function (error) {
                     console.log('[ppm err]');
@@ -497,13 +660,16 @@
             },
 
             _handlePageFlow: function (val) {
-                console.log(val);
                 this.form2.page= val;
 
                 this.queryFlows();
             },
+			_handlePageFlowDetail: function (val) {
+                this.form3.page= val;
+
+                this.queryFlowDetails();
+            },
 			_handlePageModel: function (val) {
-                console.log(val);
                 this.form.page= val;
 
                 this.queryModels();
@@ -512,6 +678,11 @@
 			handleViewFlow: function (row) {
 
                 window.location.href= "diagram-viewer/index.html?processDefinitionId="+ row.id;
+            },
+
+            handleEditFlowDetail: function (row) {
+
+                window.location.href= "flowDetail.html?flowId="+ row.id;
             },
 
             filterFlow: function (value, row) {
@@ -562,6 +733,37 @@
                         console.log(error);
                     });
                 }
+            },
+
+            removePPMDataByFlowId: function () {
+
+                var vueThis= this;
+				axios.post('flow/removePPMDataByFlowId',{
+					flowId: this.ppmFlowId,
+					state: '0'
+				}).then(function (response) {
+
+					if (response.status== 200&&response.data=='success')
+					{
+						vueThis.$message({
+							message: '流程业务模型数据删除成功',
+							type: 'success'
+						});
+
+						vueThis.queryFlowDetails();
+					}
+					else
+					{
+						vueThis.$message({
+							message: '流程业务模型数据删除异常',
+							type: 'error'
+						});
+					}
+
+				}).catch(function (error) {
+					console.log('[ppm err]');
+					console.log(error);
+				});
             },
 
             handleFlowToModel: function (row) {
@@ -622,9 +824,37 @@
                 var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
                     results = regex.exec(location.search);
                 return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+            },
+
+            handleDeletePPMFlow: function (row) {
+
+			    this.ppmFlowId= row.id;
+
+			    this.dialogFlowDetailVisible= true;
+            },
+
+            handleCloseFlowDetail: function () {
+
+			    this.removePPMDataByFlowId();
+                this.dialogFlowDetailVisible= false;
             }
     	},
 		computed: {
+
+		},
+		watch:{
+            'flowKey':function(newVal,oldVal){
+
+                this.queryFlowByKey(newVal);
+            },
+
+			'activeName':function(newVal,oldVal){
+
+                if (newVal== 'third')
+                {
+                    this.queryFlowDetails();
+                }
+            }
 
 		}
     });

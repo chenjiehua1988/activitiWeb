@@ -11,17 +11,152 @@
 <body>
 <div id="app">
     <el-button @click="visible = true">按钮</el-button>
-    <el-dialog :visible.sync="visible" title="Hello world">
-        <p>欢迎使用 Element</p>
+    <el-dialog title="环节处理人" :visible.sync="visible">
+        <el-form :model="dialog" ref="ruleForm">
+            <el-form-item label="角色" prop="role">
+                <el-select v-model="dialog.role" placeholder="请选择角色">
+                    <el-option
+                            v-for="item in roles"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+
+        <div style="width: 49%;float: left;margin-right: 1%;height: 500px;overflow-y: scroll">
+            <el-tag type="primary">待选员工列表</el-tag>
+            <el-table :data="selectingStaffs" :row-class-name="tableRowClassName">
+                <el-table-column prop="id" label="员工id">
+                </el-table-column>
+                <el-table-column prop="name" label="员工姓名">
+                </el-table-column>
+                <el-table-column inline-template label="操作">
+                    <div>
+                        <el-button
+                                size="mini"
+                                type="info"
+                                @click="handleAddStaff(row)">新增
+                        </el-button>
+                    </div>
+                </el-table-column>
+            </el-table>
+        </div>
+
+
+        <div style="width: 49%;float: left;height: 500px;overflow-y: scroll">
+            <el-tag type="danger">已选员工列表</el-tag>
+            <el-table :data="selectedStaffs" :row-class-name="tableRowClassName">
+                <el-table-column prop="id" label="员工id">
+                </el-table-column>
+                <el-table-column prop="name" label="员工姓名">
+                </el-table-column>
+                <el-table-column inline-template label="操作">
+                    <div>
+                        <el-button
+                                size="mini"
+                                type="danger"
+                                @click="handleRemoveStaff(row)">删除
+                        </el-button>
+                    </div>
+                </el-table-column>
+            </el-table>
+        </div>
+
+
     </el-dialog>
+
 </div>
 </body>
 
 <script>
     new Vue({
         el: '#app',
-        data: function() {
-            return { visible: false }
+        data: {
+            visible: false,
+            dialog:{
+                role: ''
+            },
+
+            roles:[{label:'省市场部', value: '1'},{label:'省企信部', value: '2'}],
+            selectingStaffs: [{
+                id: '2016-05-02',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄',
+            }, {
+                id: '2016-05-04',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄'
+            }, {
+                id: '2016-05-01',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄',
+            }, {
+                id: '2016-05-03',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄'
+            }, {
+                id: '2016-05-04',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄'
+            }, {
+                id: '2016-05-01',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄',
+            }, {
+                id: '2016-05-03',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄'
+            }],
+
+            selectedStaffs: [{
+                id: '2016-05-02',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄',
+            }, {
+                id: '2016-05-04',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄'
+            }, {
+                id: '2016-05-01',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄',
+            }, {
+                id: '2016-05-03',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄'
+            }, {
+                id: '2016-05-04',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄'
+            }, {
+                id: '2016-05-01',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄',
+            }, {
+                id: '2016-05-03',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄'
+            }]
+        },
+        methods: {
+            tableRowClassName: function(row, index) {
+                if (index%2== 0) {
+                    return 'positive-row';
+                }
+                return '';
+            },
+
+            handleAddStaff: function (row) {
+
+                this.selectedStaffs.push({id: row.id, name: row.name});
+            },
+
+            handleRemoveStaff: function (row) {
+
+            }
+
         }
     })
 </script>

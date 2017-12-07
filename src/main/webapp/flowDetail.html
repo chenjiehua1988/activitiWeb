@@ -1,0 +1,759 @@
+<!doctype html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="description" content="江苏PPM工作流管理平台">
+	<meta name="viewport"
+		  content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, width=device-width">
+    <title>江苏PPM工作流管理平台</title>
+	<link rel="stylesheet" href="assets/css/elestyle/theme/index.css">
+    <script src="assets/js/plugins/axios/axios.min.js"></script>
+    <script src="assets/js/plugins/vue/vue.js" ></script>
+	<script src="assets/js/plugins/eleme/element.js"></script>
+	<style>
+
+	</style>
+</head>
+<body>
+
+<div id="main">
+	<div>
+		<el-button type="primary" size="small" icon="arrow-left" @click="back">返回</el-button>
+	</div>
+	<div>
+		<el-tabs v-model="activeName" @tab-click="handleClick">
+			<el-tab-pane label="流程环节" name="first">
+				<div>
+					<div>
+						<el-table
+								:data="tacheDetails"
+								border
+								style="width: 100%"
+								>
+							<el-table-column
+									prop="tacheId"
+									label="环节Id"
+									width="180">
+							</el-table-column>
+							<el-table-column
+									prop="tacheName"
+									label="环节名称"
+									width="180">
+							</el-table-column>
+							<el-table-column
+									prop="activityName"
+									label="流程环节名称">
+							</el-table-column>
+							<el-table-column
+									prop="tacheSpecCd"
+									label="环节规格"
+									:formatter="tacheSpecCdFormatter">
+							</el-table-column>
+							<el-table-column
+									prop="tacheTypeCd"
+									label="环节类型"
+									:formatter="tacheTypeCdFormatter">
+							</el-table-column>
+
+							<el-table-column inline-template label="操作">
+								<div>
+									<el-tooltip class="item" effect="dark" content="修改环节规格、环节类型" placement="right">
+										<el-button
+												size="mini"
+												type="success"
+												@click="handleEditTache(row)">修改
+										</el-button>
+									</el-tooltip>
+
+									<el-tooltip class="item" effect="dark" content="配置环节对应的审批人" placement="right">
+										<el-button
+												size="mini"
+												type="warning"
+												@click="handleTacheStaffs(row)">配置审批人
+										</el-button>
+									</el-tooltip>
+								</div>
+							</el-table-column>
+						</el-table>
+					</div>
+				</div>
+			</el-tab-pane>
+			<el-tab-pane label="流程流向" name="second">
+
+				<div>
+					<el-table
+							:data="transitionDetails"
+							border
+							style="width: 100%"
+							>
+
+						<el-table-column
+								prop="transitionId"
+								label="流向Id"
+								width="180">
+						</el-table-column>
+						<el-table-column
+								prop="transName"
+								label="流向名称"
+								width="300">
+						</el-table-column>
+						<el-table-column
+								prop="transitionType"
+								label="流向类型"
+								:formatter="transitionTypeFormatter">
+						</el-table-column>
+
+						<el-table-column inline-template label="操作">
+							<div>
+								<el-tooltip class="item" effect="dark" content="修改流程是正向还是逆向" placement="right">
+									<el-button
+											size="mini"
+											type="success"
+											@click="handleEditTransition(row)">修改
+									</el-button>
+								</el-tooltip>
+							</div>
+						</el-table-column>
+					</el-table>
+				</div>
+
+			</el-tab-pane>
+		</el-tabs>
+
+	</div>
+
+
+	<el-dialog title="修改流程环节" :visible.sync="dialogTacheVisible">
+		<el-form :model="tacheDetail"  ref="ruleForm">
+			<el-form-item label="环节Id" prop="tacheId" >
+				<el-input v-model="tacheDetail.tacheId" auto-complete="off" :disabled="true"></el-input>
+			</el-form-item>
+			<el-form-item label="环节名称" prop="tacheName">
+				<el-input v-model="tacheDetail.tacheName" auto-complete="off" :disabled="true"></el-input>
+			</el-form-item>
+			<el-form-item label="流程环节名称" prop="activityName">
+				<el-input v-model="tacheDetail.activityName" auto-complete="off" :disabled="true"></el-input>
+			</el-form-item>
+			<el-form-item  label='环节规格' prop='tacheSpecCd'>
+				<el-select  v-model="tacheDetail.tacheSpecCd" placeholder="请选择">
+					<el-option v-for="item in tacheSpecCds"
+							   :label="item.attrValueName"
+							   :key="item.attrValue"
+							   :value="item.attrValue">
+					</el-option>
+				</el-select>
+			</el-form-item>
+			<el-form-item  label='环节类型' prop='tacheTypeCd'>
+				<el-select  v-model="tacheDetail.tacheTypeCd" placeholder="请选择">
+					<el-option v-for="item in tacheTypeCds"
+							   :label="item.attrValueName"
+							   :key="item.attrValue"
+							   :value="item.attrValue">
+					</el-option>
+				</el-select>
+			</el-form-item>
+		</el-form>
+		<div slot="footer" class="dialog-footer">
+			<el-button @click="dialogTacheVisible = false">取 消</el-button>
+			<el-button type="primary" @click="updateTacheDetail">确 定</el-button>
+		</div>
+	</el-dialog>
+
+	<el-dialog title="修改流程流向" :visible.sync="dialogTransitionVisible">
+		<el-form :model="transitionDetail"  ref="ruleForm2">
+			<el-form-item label="流向Id" prop="transitionId" >
+				<el-input v-model="transitionDetail.transitionId" auto-complete="off" :disabled="true"></el-input>
+			</el-form-item>
+			<el-form-item label="流向名称" prop="transName">
+				<el-input v-model="transitionDetail.transName" auto-complete="off" :disabled="true"></el-input>
+			</el-form-item>
+			<el-form-item  label='流向类型' prop='transitionType'>
+				<el-select  v-model="transitionDetail.transitionType" placeholder="请选择">
+					<el-option v-for="item in transitionTypes"
+							   :label="item.attrValueName"
+							   :key="item.attrValue"
+							   :value="item.attrValue">
+					</el-option>
+				</el-select>
+			</el-form-item>
+		</el-form>
+		<div slot="footer" class="dialog-footer">
+			<el-button @click="dialogTransitionVisible = false">取 消</el-button>
+			<el-button type="primary" @click="updateTransitionDetail">确 定</el-button>
+		</div>
+	</el-dialog>
+
+
+	<el-dialog title="环节处理人" :visible.sync="tacheStaffsVisible">
+		<el-form :model="dialog" ref="ruleForm" style="width: 40%">
+			<el-form-item label="角色" prop="role">
+				<el-select v-model="dialog.role" placeholder="请选择角色">
+					<el-option
+							v-for="item in roles"
+							:key="item.roleId"
+							:label="item.roleName"
+							:value="item.roleId">
+						<span style="float: left">{{ item.roleName }}</span>
+						<span style="float: right; color: #8492a6; font-size: 13px">{{ item.roleId }}</span>
+					</el-option>
+				</el-select>
+			</el-form-item>
+		</el-form>
+
+		<div style="width: 40%;float: left;margin-right: 1%;height: 500px;overflow-y: scroll">
+			<el-tag type="primary">待选员工列表</el-tag>
+			<el-table :data="selectingStaffs" :row-class-name="tableRowClassName">
+				<el-table-column prop="staffId" label="员工id">
+				</el-table-column>
+				<el-table-column prop="staffName" label="员工姓名">
+				</el-table-column>
+				<el-table-column inline-template label="操作">
+					<div>
+						<el-button
+								size="mini"
+								type="info"
+								@click="handleAddStaff(row)">新增
+						</el-button>
+					</div>
+				</el-table-column>
+			</el-table>
+		</div>
+
+
+		<div style="width: 58%;float: left;height: 500px;overflow-y: scroll">
+			<el-tag type="danger">已选员工列表</el-tag>
+			<el-table :data="selectedStaffs" :row-class-name="tableRowClassName">
+				<el-table-column prop="id" label="id" v-if="false">
+				</el-table-column>
+				<el-table-column prop="staffId" label="员工id" min-width="80">
+				</el-table-column>
+				<el-table-column prop="staffName" label="员工姓名" min-width="100">
+				</el-table-column>
+				<el-table-column prop="isDefault" label="是否默认" :formatter="formatDefault" min-width="100">
+				</el-table-column>
+				<el-table-column inline-template label="操作" min-width="160">
+					<div>
+						<el-button
+								size="mini"
+								type="danger"
+								@click="handleRemoveStaff(row)">删除
+						</el-button>
+						<el-button
+								size="mini"
+								type="warning"
+								@click="handleUpdateStaff(row)">{{row.isDefault==1?'解除默认':'设为默认'}}
+						</el-button>
+					</div>
+				</el-table-column>
+			</el-table>
+		</div>
+
+
+	</el-dialog>
+
+
+</div>
+
+
+<style>
+
+	.el-select{
+		width: 100%;
+	}
+
+</style>
+
+
+<script>
+    new Vue({
+    	el:"#main",
+        beforeMount: function () {
+
+    	    var flowId= this.getParameterByName("flowId");
+    	    if (flowId&&flowId!= "")
+			{
+			    this.flowId= flowId;
+			}
+            //主数据
+            this.init();
+        },
+    	data: {
+
+            activeName: "first",
+            flowId: "",
+			//环节列表
+            tacheDetails: [],
+			//流程定义列表
+            transitionDetails: [],
+			//显示修改流程环节对话框
+            dialogTacheVisible: false,
+			//显示修改流程流向对话框
+            dialogTransitionVisible: false,
+			//需要修改的环节
+            tacheDetail: {tacheId: '', tacheName:'', activityName:'', tacheSpecCd:'', tacheTypeCd:''},
+			//需要修改的流向
+    		transitionDetail: {transitionId: '', transName:'', transitionType:''},
+            tacheSpecCds: [{attrValueName: '普通环节', attrValue: '1'},{attrValueName: '发布管理环节', attrValue: '6'}],
+            tacheTypeCds:
+				[
+                {attrValueName: '普通环节', attrValue: '1'},
+				{attrValueName: '第二个环节', attrValue: '-2'},
+				{attrValueName: '自动环节', attrValue: '-7'},
+				{attrValueName: '开始环节', attrValue: 'START_EVENT'},
+				{attrValueName: '结束环节', attrValue: 'END_EVENT'}
+				],
+            transitionTypes:
+				[
+                {attrValueName: '正向', attrValue: '0'},
+				{attrValueName: '逆向', attrValue: '1'}
+				],
+
+			//配置环节审批人对话框
+            tacheStaffsVisible: false,
+            dialog:{
+                //当前选择的角色
+                role: '',
+				//当前选择的环节
+				tacheId: ''
+            },
+
+            roles:[],
+            selectingStaffs: [],
+
+            selectedStaffs: []
+        },
+    	methods:{
+
+            handleClick: function(tab, event) {
+            },
+
+
+			//查询所有ppm流程环节
+            queryTacheDetails: function () {
+
+                var vueThis= this;
+                axios.post('flow/queryTacheDetails',{
+
+                    flowId: vueThis.flowId
+                }).then(function (response) {
+
+					if (response.status== 200)
+					{
+                        vueThis.tacheDetails= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+			//查询所有ppm流程流向
+            queryTransitionDetails: function () {
+
+                var vueThis= this;
+                axios.post('flow/queryTransitionDetails',{
+
+                    flowId: vueThis.flowId
+                }).then(function (response) {
+
+					if (response.status== 200)
+					{
+                        vueThis.transitionDetails= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+            init: function () {
+
+			    this.queryTacheDetails();
+			    this.queryTransitionDetails();
+            },
+
+
+            getParameterByName: function (name) {
+                name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+                var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                    results = regex.exec(location.search);
+                return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+            },
+
+            tacheSpecCdFormatter: function (row, column) {
+
+                var res= "普通环节";
+                for(var i=0; i< this.tacheSpecCds.length; i++)
+				{
+				    if(this.tacheSpecCds[i]["attrValue"]== row["tacheSpecCd"]+"")
+					{
+					    res= this.tacheSpecCds[i]["attrValueName"];
+					    break;
+					}
+				}
+
+                return res;
+            },
+
+            tacheTypeCdFormatter: function (row, column) {
+
+                var res= "普通环节";
+                for(var i=0; i< this.tacheTypeCds.length; i++)
+                {
+                    if(this.tacheTypeCds[i]["attrValue"]== row["tacheTypeCd"]+"")
+                    {
+                        res= this.tacheTypeCds[i]["attrValueName"];
+                        break;
+                    }
+                }
+
+                return res;
+            },
+
+            transitionTypeFormatter: function (row, column) {
+
+                var res= "正向";
+                for(var i=0; i< this.transitionTypes.length; i++)
+                {
+                    if(this.transitionTypes[i]["attrValue"]== row["transitionType"]+"")
+                    {
+                        res= this.transitionTypes[i]["attrValueName"];
+                        break;
+                    }
+                }
+
+                return res;
+            },
+
+            handleEditTache: function (row) {
+
+                this.tacheDetail.tacheId= row.tacheId;
+                this.tacheDetail.tacheName= row.tacheName;
+                this.tacheDetail.activityName= row.activityName;
+                this.tacheDetail.tacheSpecCd= row.tacheSpecCd;
+                this.tacheDetail.tacheTypeCd= row.tacheTypeCd;
+
+                this.dialogTacheVisible= true;
+            },
+
+            handleEditTransition: function (row) {
+
+                this.transitionDetail.transitionId= row.transitionId;
+                this.transitionDetail.transName= row.transName;
+                this.transitionDetail.transitionType= row.transitionType;
+
+                this.dialogTransitionVisible= true;
+            },
+
+			updateTacheDetail: function()
+			{
+                this.dialogTacheVisible = false;
+
+                var vueThis= this;
+                axios.post('flow/updateTacheDetail',this.tacheDetail).then(function (response) {
+
+                    if (response.status== 200&&response.data=='success')
+                    {
+                        vueThis.$message({
+                            message: '流程环节修改成功',
+                            type: 'success'
+                        });
+
+                        vueThis.init();
+                    }
+                    else
+                    {
+                        vueThis.$message({
+                            message: '流程环节修改异常',
+                            type: 'error'
+                        });
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+			},
+
+            updateTransitionDetail: function()
+			{
+                this.dialogTransitionVisible = false;
+
+                var vueThis= this;
+                axios.post('flow/updateTransitionDetail',this.transitionDetail).then(function (response) {
+
+                    if (response.status== 200&&response.data=='success')
+                    {
+                        vueThis.$message({
+                            message: '流程流向修改成功',
+                            type: 'success'
+                        });
+
+                        vueThis.init();
+                    }
+                    else
+                    {
+                        vueThis.$message({
+                            message: '流程流向修改异常',
+                            type: 'error'
+                        });
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+			},
+
+			back: function () {
+
+                window.location.href="main.html?activeName=third";
+            },
+
+            handleTacheStaffs: function (row) {
+
+                this.dialog.tacheId= row.tacheId;
+                this.dialog.role= '';
+                //初始化角色列表、当前环节已选择的审批人列表
+				this.queryRoles();
+				this.queryStaffsByTacheId(row.tacheId);
+
+                this.tacheStaffsVisible= true;
+            },
+
+            tableRowClassName: function(row, index) {
+                if (index%2== 0) {
+                    return 'positive-row';
+                }
+                return 'info-row';
+            },
+
+            handleAddStaff: function (row) {
+
+                var isSelected= false;
+                //判断员工是否已经被选过
+				for(var i=0; i< this.selectedStaffs.length; i++)
+				{
+				    if(row.staffId== this.selectedStaffs[i].staffId)
+					{
+					    isSelected= true;
+					    break;
+					}
+				}
+
+				if (isSelected)
+				{
+                    this.$message({
+                        message: '该员工已经选过，不能重复选择',
+                        type: 'error'
+                    });
+				}
+				else
+				{
+				    var staff= {staffId: row.staffId, staffName: row.staffName, tacheId: this.dialog.tacheId};
+
+                    var vueThis= this;
+                    axios.post('flow/saveFlowOperator',staff).then(function (response) {
+
+                        if (response.status== 200&&response.data=='success')
+                        {
+                            vueThis.$message({
+                                message: '添加员工成功',
+                                type: 'success'
+                            });
+
+                            vueThis.queryStaffsByTacheId(vueThis.dialog.tacheId);
+                        }
+                        else
+                        {
+                            vueThis.$message({
+                                message: '添加员工异常',
+                                type: 'error'
+                            });
+                        }
+
+                    }).catch(function (error) {
+                        console.log('[ppm err]')
+                        console.log(error);
+                    });
+
+
+                }
+            },
+
+            handleRemoveStaff: function (row) {
+
+                var vueThis= this;
+                axios.post('flow/removeFlowOperator',{id: row.id}).then(function (response) {
+
+                    if (response.status== 200&&response.data=='success')
+                    {
+                        vueThis.$message({
+                            message: '删除员工成功',
+                            type: 'success'
+                        });
+
+                        vueThis.queryStaffsByTacheId(vueThis.dialog.tacheId);
+                    }
+                    else
+                    {
+                        vueThis.$message({
+                            message: '删除员工异常',
+                            type: 'error'
+                        });
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+            handleUpdateStaff: function (row) {
+
+                //flag= false设置默认   flag=true解除默认
+                var flag= false;
+                //先判断是解除默认还是设置默认
+				if(row.isDefault== 1)
+				{
+				    //解除默认
+					flag= true;
+				}
+				else
+				{
+				    //设置默认
+                    //先判断是否已经有默认审批人了
+                    //判断员工是否已经被选过
+                    for(var i=0; i< this.selectedStaffs.length; i++)
+                    {
+                        if(1== this.selectedStaffs[i].isDefault)
+                        {
+                            this.$message({
+                                message: '已经存在默认审批人了',
+                                type: 'error'
+                            });
+                            return;
+                        }
+                    }
+				}
+
+                var vueThis= this;
+                axios.post('flow/updateFlowOperator',{id: row.id,isDefault: flag?0:1}).then(function (response) {
+
+                    if (response.status== 200&&response.data=='success')
+                    {
+                        vueThis.$message({
+                            message: flag?'解除默认审批人成功':'设置为默认审批人成功',
+                            type: 'success'
+                        });
+
+                        vueThis.queryStaffsByTacheId(vueThis.dialog.tacheId);
+                    }
+                    else
+                    {
+                        vueThis.$message({
+                            message: flag?'解除默认审批人异常':'设置为默认审批人异常',
+                            type: 'error'
+                        });
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+
+            },
+
+			//查询角色列表
+            queryRoles: function () {
+
+                var vueThis= this;
+                axios.post('flow/queryRoles',{
+
+                }).then(function (response) {
+
+                    if (response.status== 200)
+                    {
+                        vueThis.roles= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+			//查询环节对应的审批人
+            queryStaffsByTacheId: function (tacheId) {
+
+                var vueThis= this;
+                axios.post('flow/queryStaffsByTacheId',{
+
+                    tacheId: tacheId
+                }).then(function (response) {
+
+                    if (response.status== 200)
+                    {
+                        vueThis.selectedStaffs= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+            //查询角色下的员工列表
+            queryStaffsByRoleId: function (roleId) {
+
+                var vueThis= this;
+                axios.post('flow/queryStaffsByRoleId',{
+
+                    roleId: roleId
+                }).then(function (response) {
+
+                    if (response.status== 200)
+                    {
+                        vueThis.selectingStaffs= response.data.data;
+                    }
+
+                }).catch(function (error) {
+                    console.log('[ppm err]')
+                    console.log(error);
+                });
+            },
+
+            formatDefault: function (row, column) {
+
+                var res= "否";
+                if(row.isDefault+""== '1')
+				{
+				    res= "是";
+				}
+                return res;
+            },
+    	},
+		computed: {
+
+		},
+		watch:{
+    	    "dialog.role": function (newVal, oldVal) {
+
+    	        this.queryStaffsByRoleId(newVal);
+            }
+		}
+    });
+</script>
+</body>
+</html>
+
