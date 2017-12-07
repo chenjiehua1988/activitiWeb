@@ -67,6 +67,11 @@ public class FlowController {
 			Deployment deployment = repositoryService.createDeployment().name(modelData.getName()).addString(processName, new String(bpmnBytes,"utf-8")).deploy();
 
 			ProcessDefinition processDefinition= repositoryService.createProcessDefinitionQuery().deploymentId(deployment.getId()).singleResult();
+
+			//给model表设置流程key
+			String key= processDefinition.getKey();
+			modelData.setKey(key);
+			repositoryService.saveModel(modelData);
 			jsonObject.put("processId", processDefinition.getId());
 
 		} catch (Exception e) {
@@ -118,8 +123,9 @@ public class FlowController {
 					jsonObject.put("deploymentId", processDefinition.getDeploymentId());
 
 					//查询流程定义是否已经有了可编辑模型
-					long modelCount= repositoryService.createModelQuery().modelName(processDefinition.getName()).count();
-					jsonObject.put("hasModel", modelCount== 0?false: true);
+					long modelCount1= repositoryService.createModelQuery().modelName(processDefinition.getName()).count();
+					long modelCount2= repositoryService.createModelQuery().modelKey(processDefinition.getKey()).count();
+					jsonObject.put("hasModel", modelCount1+ modelCount2== 0?false: true);
 
 					jsonArray.add(jsonObject);
 				}
