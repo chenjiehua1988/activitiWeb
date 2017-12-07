@@ -109,14 +109,14 @@
 	<select id="queryFlowDetailCount" parameterType="java.util.Map" resultType="java.util.Map">
 		select count(1) as "total"
 		from flow_detail t, flow_template ft
-		where 1 = 1
+		where 1 = 1 and t.state='1' and ft.state='1'
 		and t.flow_id = ft.flow_id
 	</select>
 
 	<select id="queryFlowInstCount" parameterType="java.util.Map" resultType="java.util.Map">
 		 select count(1) as "total"
 		   from flow_inst i, flow_detail d, flow_template t
-		  where t.flow_id = d.flow_id
+		  where t.flow_id = d.flow_id and d.state='1' and t.state='1'
 			and i.flow_template_id = t.flow_template_id
 			and i.flow_id = d.flow_id
 			and d.flow_id = #{flowId,jdbcType=DECIMAL}
@@ -160,7 +160,10 @@
 		DELETE from tache_detail where flow_id= #{flowId,jdbcType=DECIMAL};
 		DELETE from transition_detail where flow_id= #{flowId,jdbcType=DECIMAL};
 		UPDATE flow_template
-		set flow_template_name=#{name,jdbcType=VARCHAR},description=#{name,jdbcType=VARCHAR}
+		set flow_id= #{flowId,jdbcType=DECIMAL}
+		<if test="name!= null and state!=''">
+			,flow_template_name=#{name,jdbcType=VARCHAR},description=#{name,jdbcType=VARCHAR}
+		</if>
 		<if test="state!= null and state!=''">
 			,state=#{state,jdbcType=VARCHAR}
 		</if>
