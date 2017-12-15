@@ -29,8 +29,8 @@
 		<el-tabs v-model="activeName">
 			<el-tab-pane label="流程设计工作区" name="first">
 				<div>
-					<div>
-						<el-button-group>
+					<div style="height:36px;margin-bottom:10px;">
+						<el-button-group style="float: right;margin-right: 10px;">
 							<el-button type="primary" icon="el-icon-plus-" @click="dialogFormVisible= true">新建</el-button>
 							<el-button type="primary" icon="el-icon-delete-" @click="showDeleteModelDialog">删除</el-button>
 						</el-button-group>
@@ -40,48 +40,61 @@
 								v-loading.body="loadingModelTable"
 								:element-loading-text=loadingModelTableText
 								:data="models"
+								:stripe=true
 								border
 								style="width: 100%"
 								@selection-change="handleSelectionChange">
 							<el-table-column
 									type="selection"
-									width="55">
+									min-width="55"
+									show-overflow-tooltip>
 							</el-table-column>
 							<el-table-column
 									prop="id"
 									label="id"
-									width="180">
+									show-overflow-tooltip
+									min-width="120">
 							</el-table-column>
 							<el-table-column
 									prop="name"
 									label="名称"
-									width="180">
+									show-overflow-tooltip
+									min-width="120">
 							</el-table-column>
 							<el-table-column
 									prop="key"
+									min-width="80"
+									show-overflow-tooltip
 									label="key">
 							</el-table-column>
 							<el-table-column
 									prop="description"
+									min-width="100"
 									label="描述">
 							</el-table-column>
 							<el-table-column
 									prop="createTime"
+									min-width="100"
+									show-overflow-tooltip
 									label="创建时间">
 							</el-table-column>
 							<el-table-column
 									prop="lastUpdateTime"
+									min-width="100"
+									show-overflow-tooltip
 									label="更新时间">
 							</el-table-column>
 
-							<el-table-column inline-template label="操作">
+							<el-table-column inline-template label="操作" align="center">
 								<div>
 									<el-button
-											size="mini"
-											@click="handleEdit(row)">编辑
+											size="small"
+											@click="handleEdit(row)"
+											color="#00b9e5"
+											>编辑
 									</el-button>
 									<el-button
-											size="mini"
+											size="small"
 											type="danger"
 											@click="handleDeploy(row)">部署
 									</el-button>
@@ -100,7 +113,7 @@
 			</el-tab-pane>
 			<el-tab-pane label="已部署流程定义" name="second">
 
-				<div style="width: 15%">
+				<div style="width: 15%；margin-bottom:10px;">
 					<el-select  v-model="flowKey" placeholder="请选择流程" clearable  style="width: 100%">
 						<el-option v-for="item in flowKeys"
 								   :label="item.name"
@@ -114,6 +127,7 @@
 							v-loading.body="loadingFlowTable"
 							:element-loading-text=loadingFlowTableText
 							:data="flows"
+							:stripe=true
 							border
 							style="width: 100%"
 							>
@@ -121,12 +135,14 @@
 						<el-table-column
 								prop="id"
 								label="id"
-								width="180">
+								show-overflow-tooltip
+								min-width="60">
 						</el-table-column>
 						<el-table-column
 								prop="name"
 								label="名称"
-								width="180">
+								show-overflow-tooltip
+								min-width="120">
 						</el-table-column>
 						<el-table-column
 								prop="key"
@@ -143,20 +159,22 @@
 						</el-table-column>
 
 
-						<el-table-column inline-template label="操作">
+						<el-table-column inline-template label="操作" align="center">
 							<div>
 								<el-button
-										size="mini"
-										@click="handleViewFlow(row)">查看
+										size="small"
+										@click="handleViewFlow(row)"
+										style="color:#00b9e5;"
+										>查看
 								</el-button>
 								<el-button
-										size="mini"
+										size="small"
 										type="danger"
 										@click="handleDeleteFlow(row)">删除
 								</el-button>
 								<el-tooltip class="item" effect="dark" content="转换流程定义为可编辑模型" placement="right">
 									<el-button
-											size="mini"
+											size="small"
 											type="success"
 											:disabled="row.hasModel"
 											@click="handleFlowToModel(row)">转换
@@ -180,6 +198,7 @@
 				<div>
 					<el-table
 							:data="flowDetails"
+							:stripe=true
 							border
 							style="width: 100%"
 							>
@@ -187,17 +206,20 @@
 						<el-table-column
 								prop="id"
 								label="id"
-								width="180">
+								show-overflow-tooltip
+								min-width="60">
 						</el-table-column>
 						<el-table-column
 								prop="name"
 								label="名称"
-								width="300">
+								show-overflow-tooltip
+								min-width="120">
 						</el-table-column>
 						<el-table-column
 								prop="key"
 								label="key"
-								width="300">
+								show-overflow-tooltip
+								min-width="100">
 						</el-table-column>
 						<el-table-column
 								prop="version"
@@ -209,12 +231,12 @@
 						<el-table-column inline-template label="操作" align="center">
 							<div>
 								<el-button
-										size="mini"
+										size="small"
 										@click="handleEditFlowDetail(row)">编辑
 								</el-button>
 								<el-tooltip class="item" effect="dark" content="删除流程业务模型数据，已经实例化的不能删除" placement="right">
 									<el-button
-											size="mini"
+											size="small"
 											type="danger"
 											@click="handleDeletePPMFlow(row)"
 											:disabled="row.hasFlowInst">删除
