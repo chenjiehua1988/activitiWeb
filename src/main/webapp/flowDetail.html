@@ -131,18 +131,18 @@
 	</div>
 
 
-	<el-dialog title="修改流程环节" :visible.sync="dialogTacheVisible">
+	<el-dialog title="修改流程环节" :visible.sync="dialogTacheVisible" style="height:500px;" id="pd10">
 		<el-form :model="tacheDetail"  ref="ruleForm">
-			<el-form-item label="环节Id" prop="tacheId" >
+			<el-form-item label="环节Id" prop="tacheId" style="margin-bottom:0px;">
 				<el-input v-model="tacheDetail.tacheId" auto-complete="off" :disabled="true"></el-input>
 			</el-form-item>
-			<el-form-item label="环节名称" prop="tacheName">
+			<el-form-item label="环节名称" prop="tacheName" style="margin-bottom:0px;">
 				<el-input v-model="tacheDetail.tacheName" auto-complete="off" :disabled="true"></el-input>
 			</el-form-item>
-			<el-form-item label="流程环节名称" prop="activityName">
+			<el-form-item label="流程环节名称" prop="activityName" style="margin-bottom:0px;">
 				<el-input v-model="tacheDetail.activityName" auto-complete="off" :disabled="true"></el-input>
 			</el-form-item>
-			<el-form-item  label='环节规格' prop='tacheSpecCd'>
+			<el-form-item  label='环节规格' prop='tacheSpecCd' style="margin-bottom:0px;">
 				<el-select  v-model="tacheDetail.tacheSpecCd" placeholder="请选择">
 					<el-option v-for="item in tacheSpecCds"
 							   :label="item.attrValueName"
@@ -151,7 +151,7 @@
 					</el-option>
 				</el-select>
 			</el-form-item>
-			<el-form-item  label='环节类型' prop='tacheTypeCd'>
+			<el-form-item  label='环节类型' prop='tacheTypeCd' style="margin-bottom:0px;">
 				<el-select  v-model="tacheDetail.tacheTypeCd" placeholder="请选择">
 					<el-option v-for="item in tacheTypeCds"
 							   :label="item.attrValueName"
@@ -192,7 +192,7 @@
 	</el-dialog>
 
 
-	<el-dialog title="环节处理人" :visible.sync="tacheStaffsVisible">
+	<el-dialog title="环节处理人" :visible.sync="tacheStaffsVisible" style="height:500px;">
 		<el-form :model="dialog" ref="ruleForm" style="width: 40%">
 			<el-form-item label="角色" prop="role">
 				<el-select v-model="dialog.role" placeholder="请选择角色">
@@ -208,8 +208,8 @@
 			</el-form-item>
 		</el-form>
 
-		<div style="width: 40%;float: left;margin-right: 1%;height: 500px;overflow-y: scroll">
-			<el-tag type="primary">待选员工列表</el-tag>
+		<div style="width: 40%;float: left;margin-right: 1%;height: 330px;">
+			<el-tag type="primary" style="margin-bottom:10px;">待选员工列表</el-tag>
 			<el-table :data="selectingStaffs" :row-class-name="tableRowClassName">
 				<el-table-column prop="staffId" label="员工id">
 				</el-table-column>
@@ -228,8 +228,8 @@
 		</div>
 
 
-		<div style="width: 58%;float: left;height: 500px;overflow-y: scroll">
-			<el-tag type="danger">已选员工列表</el-tag>
+		<div style="width: 58%;float: left;height: 500px;">
+			<el-tag type="danger"style="margin-bottom:10px;">已选员工列表</el-tag>
 			<el-table :data="selectedStaffs" :row-class-name="tableRowClassName">
 				<el-table-column prop="id" label="id" v-if="false">
 				</el-table-column>
@@ -271,6 +271,9 @@
 
 	.el-dialog--small {
 		width: 60%;
+	}
+	#pd10 .el-dialog__body{
+		padding:10px 20px;
 	}
 
 </style>
