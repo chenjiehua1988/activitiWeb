@@ -205,6 +205,8 @@ public class ModuleController {
 			String flowDetailSeq= null;
 			int index= 1;
 			StartEvent startEvent= null;
+			//已经发布过的流程的tache_detail数据
+			Map<String, String> oldTacheDetailMap= null;
 
 			//1、先查询是否已经有数据flow_detail
 			Map flowDetail= new HashMap();
@@ -217,8 +219,33 @@ public class ModuleController {
 			String flowId= null;
 			if (flowDetailList!= null&&flowDetailList.size()> 0)
 			{
+				//对已经存在的流程重新部署
 				flowId= flowDetailList.get(0).get("flowId").toString();
 				flowDetailSeq= flowId;
+
+				//查询tache_detail,构造数据结构，后面生成新数据使用，避免生成新的tache_id
+				Map flowIdMap= new HashMap();
+				flowIdMap.put("flowId", flowId);
+				List<Map> mapList= ppmFlowService.queryTacheDetails(flowIdMap);
+				oldTacheDetailMap= new HashMap<String, String>();
+				for (int i = 0; i < mapList.size(); i++) {
+					Map map1 = mapList.get(i);
+					if (map1.get("activityName")== null)
+					{
+						//特殊处理  开始节点、结束节点
+						if("START_EVENT".equals(map1.get("tacheTypeCd"))||"END_EVENT".equals(map1.get("tacheTypeCd")))
+						{
+							oldTacheDetailMap.put(map1.get("tacheTypeCd").toString(), map1.get("tacheId").toString());
+						}else
+						{
+							throw new RuntimeException("除了开始和结束环节，activityName不可为空");
+						}
+					}
+					else
+					{
+						oldTacheDetailMap.put(map1.get("activityName").toString(), map1.get("tacheId").toString());
+					}
+				}
 			}
 			else
 			{
@@ -231,6 +258,11 @@ public class ModuleController {
 			for (FlowElement flowElement: collectionTache) {
 
 				String tacheId= flowDetailSeq+ StringUtils.leftPad(""+index, 2, "0");
+				//如果是已经部署过的流程，直接使用tache_id
+				if (oldTacheDetailMap.containsKey(flowElement.getId()))
+				{
+					tacheId= oldTacheDetailMap.get(flowElement.getId());
+				}
 				Map tacheDetail= new HashMap();
 				tacheDetail.put("tacheId", tacheId);
 				tacheDetail.put("flowId", flowId== null?flowDetailSeq:flowId);
