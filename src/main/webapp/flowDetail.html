@@ -249,7 +249,7 @@
 						<el-button
 								size="mini"
 								type="warning"
-								@click="handleUpdateStaff(row)">{{row.isDefault==1?'解除默认':'设为默认'}}
+								@click="handleUpdateStaff(row)">{{row.isDefault==0?'解除默认':'设为默认'}}
 						</el-button>
 					</div>
 				</el-table-column>
@@ -631,7 +631,7 @@
                 //flag= false设置默认   flag=true解除默认
                 var flag= false;
                 //先判断是解除默认还是设置默认
-				if(row.isDefault== 1)
+				if(row.isDefault== 0)
 				{
 				    //解除默认
 					flag= true;
@@ -643,7 +643,7 @@
                     //判断员工是否已经被选过
                     for(var i=0; i< this.selectedStaffs.length; i++)
                     {
-                        if(1== this.selectedStaffs[i].isDefault)
+                        if(0== this.selectedStaffs[i].isDefault)
                         {
                             this.$message({
                                 message: '已经存在默认审批人了',
@@ -655,7 +655,7 @@
 				}
 
                 var vueThis= this;
-                axios.post('flow/updateFlowOperator',{id: row.id,isDefault: flag?0:1}).then(function (response) {
+                axios.post('flow/updateFlowOperator',{id: row.id,isDefault: flag?1:0}).then(function (response) {
 
                     if (response.status== 200&&response.data=='success')
                     {
