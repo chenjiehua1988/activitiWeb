@@ -234,7 +234,7 @@
 		is_default,
 		deal_type)
 		values
-		(SEQ_FLOW_OPERATOR.Nextval, #{tacheId,jdbcType=DECIMAL}, '1', #{staffId,jdbcType=DECIMAL}, '1', 0, 1)
+		(SEQ_FLOW_OPERATOR.Nextval, #{tacheId,jdbcType=DECIMAL}, '1', #{staffId,jdbcType=DECIMAL}, '1', 1, 1)
 	</insert>
 
 	<delete id="removeFlowOperator" parameterType="java.util.Map">
