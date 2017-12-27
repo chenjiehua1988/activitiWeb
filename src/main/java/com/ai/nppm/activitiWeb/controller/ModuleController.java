@@ -206,7 +206,7 @@ public class ModuleController {
 			int index= 1;
 			StartEvent startEvent= null;
 			//已经发布过的流程的tache_detail数据
-			Map<String, String> oldTacheDetailMap= null;
+			Map<String, String> oldTacheDetailMap= new HashMap<String, String>();
 
 			//1、先查询是否已经有数据flow_detail
 			Map flowDetail= new HashMap();
@@ -227,7 +227,6 @@ public class ModuleController {
 				Map flowIdMap= new HashMap();
 				flowIdMap.put("flowId", flowId);
 				List<Map> mapList= ppmFlowService.queryTacheDetails(flowIdMap);
-				oldTacheDetailMap= new HashMap<String, String>();
 				for (int i = 0; i < mapList.size(); i++) {
 					Map map1 = mapList.get(i);
 					if (map1.get("activityName")== null)
